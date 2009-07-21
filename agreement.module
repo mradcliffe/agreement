@@ -13,12 +13,12 @@
   CONFIG
 *********************************************************************/
 
-define('AGREEMENT_PAGE_URL',        'agreement');
-define('AGREEMENT_PAGE_TITLE',      'Our Agreement');
-define('AGREEMENT_MESSAGE_SUCCESS', 'Thank you for accepting our agreement!');
-define('AGREEMENT_MESSAGE_FAILURE', 'You must accept our agreement to continue!');
-define('AGREEMENT_CHECKBOX_TEXT',   'I agree.');
-define('AGREEMENT_SUBMIT_TEXT',     'Submit');
+define('AGREEMENT_PAGE_URL',       'agreement');
+define('AGREEMENT_PAGE_TITLE',      t('Our Agreement'));
+define('AGREEMENT_MESSAGE_SUCCESS', t('Thank you for accepting our agreement!'));
+define('AGREEMENT_MESSAGE_FAILURE', t('You must accept our agreement to continue!'));
+define('AGREEMENT_CHECKBOX_TEXT',   t('I agree.'));
+define('AGREEMENT_SUBMIT_TEXT',     t('Submit'));
 
 /*********************************************************************
   DRUPAL HOOKS
@@ -30,8 +30,11 @@ define('AGREEMENT_SUBMIT_TEXT',     'Submit');
 function agreement_init() {
   // If the user hasn't already agreed, lets trap them on the agreement page.
   global $user;
+  
+  // Get the user role the agreement is restricted to.
   $role = variable_get('agreement_role', -1);
 
+  // Check to make sure the user belongs to the above role.
   if (array_key_exists($role, $user->roles)) {
     $account = _agreement_user($user->uid);
   
@@ -43,8 +46,25 @@ function agreement_init() {
     );
   
     if ((!isset($account->agreed) || !$account->agreed) && !in_array($_GET['q'], $exceptions)) {
-      drupal_goto(variable_get('agreement_page_url', AGREEMENT_PAGE_URL));
-      exit();
+      // Check for enforceable URLs.
+      $enforceable = variable_get('agreement_enforceable_pages', '');	
+	
+	  // Flag to enable or disable the agreement restriction.	
+	  $restrict = TRUE;	
+		
+	  // We check the current page URI against those in the enforceable URIs list; if no match we disable the restriction
+      if(!empty($enforceable)) {
+	  	$enforceable = explode("\n", $enforceable);	
+		
+		if(!in_array($_GET['q'], $enforceable)) {
+			$restrict = FALSE;	
+		}
+  	  }
+	  
+	  if($restrict) {
+	  	drupal_goto(variable_get('agreement_page_url', AGREEMENT_PAGE_URL));
+        exit();
+	  }
     }
   }
 }
@@ -182,6 +202,14 @@ function agreement_settings() {
     '#required' => TRUE,
     '#title' => t('Agreement Submit Text'),
     '#type' => 'textfield',
+  );
+  
+  $form['agreement_enforceable_pages'] = array(
+    '#default_value' => variable_get('agreement_enforceable_pages', ''),
+    '#description' => t('Enter relative paths (one per line) on which you wish the agreement to show up. Leave blank to have the agreement show up on all pages. The front page, logout page, and the Agreement module\'s settings page are always excluded.'),
+    '#required' => FALSE,
+    '#title' => t('Enforceable Pages'),
+    '#type' => 'textarea',
   );
   
   return system_settings_form($form);
