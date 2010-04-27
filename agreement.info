@@ -1,5 +1,4 @@
 ; $Id$
 name = "Agreement"
-description = "Module allows administrators to display an agrement to users of a particular role."
+description = "Module allows administrators to display an agreement to users of a particular role."
 core = 6.x
-version = "6.x-1.0"
