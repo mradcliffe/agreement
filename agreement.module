@@ -251,7 +251,7 @@ function agreement_page() {
 
   $account = _agreement_user();
 
-  $text = check_plain(variable_get('agreement_text', ''));
+  $text = check_markup(variable_get('agreement_text', ''));
   $data = drupal_get_form('agreement_form', $text, $account->agreed, $account->uid);
 
   $output = theme('agreement_page', $data);
@@ -287,10 +287,8 @@ function agreement_form($form, $text, $status = 0, $uid = -1) {
   $form = array();
 
   $form['agreement_terms'] = array(
-    '#default_value' => $text,
-    '#disabled' => TRUE,
-    '#rows' => 20,
-    '#type' => 'textarea',
+    '#value' => $text,
+    '#type' => 'item',
   );
 
   $form['uid'] = array(
