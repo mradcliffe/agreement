@@ -100,7 +100,7 @@ function agreement_menu() {
     'description' => 'Configure settings for the Agreement module.',
     'page arguments' => array('agreement_settings'),
     'page callback' => 'drupal_get_form',
-    'title' => 'Agreement Settings',
+    'title' => 'Agreement settings',
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -179,6 +179,7 @@ function agreement_settings() {
     '#default_value' => variable_get('agreement_text', ''),
     '#description' => t('This is the agreement text.'),
     '#title' => t('Agreement Text'),
+    '#rows' => 10,
     '#type' => 'textarea',
   );
 
@@ -251,7 +252,7 @@ function agreement_page() {
 
   $account = _agreement_user();
 
-  $text = check_markup(variable_get('agreement_text', ''));
+  $text = check_markup(variable_get('agreement_text', ''), FILTER_FORMAT_DEFAULT, FALSE);
   $data = drupal_get_form('agreement_form', $text, $account->agreed, $account->uid);
 
   $output = theme('agreement_page', $data);
