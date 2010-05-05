@@ -82,7 +82,7 @@ function agreement_init() {
               }
             }
           }
-          
+
           if (!empty($restrict_parts) && !in_array(0, $restrict_parts)) {
             $restrict = TRUE;
           }
@@ -124,7 +124,7 @@ function agreement_menu() {
 }
 
 /**
- * Implementation of hook_user.
+ * Implementation of hook_user().
  */
 function agreement_user($op, &$edit, &$account, $category = NULL) {
   if ($op == 'login') {
@@ -143,13 +143,13 @@ function agreement_user($op, &$edit, &$account, $category = NULL) {
 }
 
 /**
- * Implementation of hook_theme.
+ * Implementation of hook_theme().
  */
 function agreement_theme($existing, $type, $theme, $path) {
   return array(
     'agreement_page' => array(
       'arguments' => array(
-        'form' => NULL, 
+        'form' => NULL,
   ),
   ),
     'function' => array('theme_agreement_page'),
@@ -171,7 +171,7 @@ function agreement_settings() {
 
   $form = array();
 
-  $roles = array(NULL => '') + user_roles(); 
+  $roles = array(NULL => '') + user_roles();
   unset($roles[1]);
 
   $form['agreement_role'] = array(
@@ -208,7 +208,7 @@ function agreement_settings() {
 
   $form['agreement_message_success'] = array(
     '#default_value' => variable_get('agreement_message_success', AGREEMENT_MESSAGE_SUCCESS),
-    '#description' => t('What message should be displayed to the users once they accept to the agreement?'),
+    '#description' => t('What message should be displayed to the users once they accept the agreement?'),
     '#title' => t('Agreement Success Message'),
     '#type' => 'textfield',
   );
@@ -309,7 +309,7 @@ function agreement_form($form, $text, $status = 0, $uid = -1) {
     $form['agree'] = array(
       '#default_value' => $status,
       '#title' => check_plain(variable_get('agreement_checkbox_text', AGREEMENT_CHECKBOX_TEXT)),
-      '#type' => 'checkbox',    
+      '#type' => 'checkbox',
     );
 
     $form['submit'] = array(
@@ -399,7 +399,7 @@ function agreement_views_api() {
 function agreement_views_data() {
   $data = array();
   $data['agreement']['table']['group'] = t('User');
-  
+
   $data['agreement']['table']['join'] = array(
     'users' => array(
       'left_field' => 'uid',
@@ -407,7 +407,7 @@ function agreement_views_data() {
       'type' => 'inner',
     ),
   );
-  
+
   $data['agreement']['agreed_date'] = array(
     'title' => t('Agreement date'),
     'help' => t('The date the agreement was submitted.'),
@@ -422,6 +422,6 @@ function agreement_views_data() {
        'handler' => 'views_handler_sort_date',
     ),
   );
-   
+
   return $data;
 }
