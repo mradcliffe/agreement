@@ -1,6 +1,8 @@
 $Id$ 
 
 Changes since DRUPAL-6--1:
+#639658 by pagaille: Relation between role_id and role_name breaks
+#790194 by pagaille: User role should be a required field
 #538126 by pagaille: Check who has accepted the agreement
 #789220 by pagaille: Add tests
 #790112 by pagaille: Add custom "configure agreement settings" permission
