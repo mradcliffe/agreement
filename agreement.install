@@ -21,25 +21,29 @@ function agreement_schema() {
   $schema['agreement'] = array(
     'fields' => array(
       'id' => array(
-      'type' => 'serial',
-      'unsigned' => TRUE,
-      'not null' => TRUE,
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
     ),
       'uid' => array(
-      'type' => 'int',
-      'unsigned' => TRUE,
-      'not null' => TRUE,
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
     ),
       'agreed' => array(
-      'type' => 'int',
-      'unsigned' => TRUE,
-      'not null' => TRUE,
-      'default' => 0,
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
     ),
-  ),
-    'indexes' => array(
-      'id' => array(
-      'id',
+      'sid' => array(
+        'type' => 'varchar',
+        'length' => 46,
+    ),
+      'agreed_date' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
     ),
   ),
     'primary key' => array(
@@ -65,4 +69,22 @@ function agreement_uninstall() {
   variable_del('agreement_checkbox_text');
   variable_del('agreement_submit_text');
   variable_del('agreement_enforceable_pages');
+}
+
+function agreement_update_6000() {
+  $ret = array();
+  db_drop_index($ret, 'agreement', 'id');
+  db_add_field($ret, 'agreement', 'sid', array(
+    'type' => 'varchar',
+    'length' => 46,
+    )
+  );
+  db_add_field($ret, 'agreement', 'agreed_date', array(
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    )
+  );
+  
+  return $ret;
 }

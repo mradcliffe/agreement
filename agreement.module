@@ -25,6 +25,13 @@ define('AGREEMENT_SUBMIT_TEXT',     t('Submit'));
  *********************************************************************/
 
 /**
+ * Implementation of hook_perm().
+ */
+function agreement_perm() {
+  return array('configure agreement settings');
+}
+
+/**
  * Implementation of hook_init().
  */
 function agreement_init() {
@@ -43,6 +50,7 @@ function agreement_init() {
       check_plain(variable_get('agreement_page_url', AGREEMENT_PAGE_URL)),
       check_plain(variable_get('site_frontpage', 'node')),
       'logout',
+      'admin/settings/agreement',
     );
 
     if ((!isset($account->agreed) || !$account->agreed) && !in_array($_GET['q'], $exceptions)) {
@@ -96,7 +104,7 @@ function agreement_menu() {
   $items = array();
 
   $items['admin/settings/agreement'] = array(
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('configure agreement settings'),
     'description' => 'Configure settings for the Agreement module.',
     'page arguments' => array('agreement_settings'),
     'page callback' => 'drupal_get_form',
@@ -179,7 +187,7 @@ function agreement_settings() {
     '#default_value' => variable_get('agreement_text', ''),
     '#description' => t('This is the agreement text.'),
     '#title' => t('Agreement Text'),
-    '#rows' => 10,
+    '#rows' => 12,
     '#type' => 'textarea',
   );
 
@@ -338,7 +346,7 @@ function agreement_form_submit($form, &$form_state) {
   $agree = $form_state['values']['agree'];
 
   db_query("DELETE FROM {agreement} WHERE uid='%d'", $uid);
-  db_query("INSERT INTO {agreement} (uid, agreed) VALUES (%d, %d)", $uid, $agree);
+  db_query("INSERT INTO {agreement} (uid, agreed, sid, agreed_date) VALUES (%d, %d, '%s', %d)", $uid, $agree, session_id(), time());
 
   drupal_set_message(check_plain(variable_get('agreement_message_success', AGREEMENT_MESSAGE_SUCCESS)));
 
@@ -373,4 +381,47 @@ function _agreement_user($uid = NULL) {
   $default->uid = $uid;
 
   return $default;
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function agreement_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'agreement'),
+  );
+}
+
+/**
+ * Implementation of hook_views_data().
+ */
+function agreement_views_data() {
+  $data = array();
+  $data['agreement']['table']['group'] = t('User');
+  
+  $data['agreement']['table']['join'] = array(
+    'users' => array(
+      'left_field' => 'uid',
+      'field' => 'uid',
+      'type' => 'inner',
+    ),
+  );
+  
+  $data['agreement']['agreed_date'] = array(
+    'title' => t('Agreement date'),
+    'help' => t('The date the agreement was submitted.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+       'handler' => 'views_handler_sort_date',
+    ),
+  );
+   
+  return $data;
 }
