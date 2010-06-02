@@ -1,6 +1,7 @@
 $Id$ 
 
 Changes since DRUPAL-6--1:
+#815644 by pagaille: Add translation .pot file
 #739812 by pagaille: Support for the CAS Module
 #685030 by pagaille: If Enforceable Pages field is left blank, agreement module does not work
 #786552 by pagaille: Set redirect page in the settings
