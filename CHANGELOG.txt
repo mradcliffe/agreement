@@ -1,6 +1,9 @@
 $Id$ 
 
 Changes since DRUPAL-6--1:
+#739812 by pagaille: Support for the CAS Module
+#685030 by pagaille: If Enforceable Pages field is left blank, agreement module does not work
+#786552 by pagaille: Set redirect page in the settings
 #639658 by pagaille: Relation between role_id and role_name breaks
 #790194 by pagaille: User role should be a required field
 #538126 by pagaille: Check who has accepted the agreement

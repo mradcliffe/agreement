@@ -41,7 +41,8 @@ class AgreementTestCase extends DrupalWebTestCase {
     $settings['agreement_message_failure'] = 'You must accept our agreement to continue!';
     $settings['agreement_checkbox_text'] = 'I agree.';
     $settings['agreement_submit_text'] = 'Submit';
-    $settings['agreement_enforceable_pages'] = '*';
+    $settings['agreement_page_visibility_settings'] = 0;
+    $settings['agreement_page_visibility_pages'] = '<front>';
 
     $this->drupalPost('admin/settings/agreement', $settings, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved'), t('Agreement settings saved'));
@@ -65,7 +66,6 @@ class AgreementTestCase extends DrupalWebTestCase {
 
     // Try to submit without checking the I agree box
     $field_values = array();
-    $field_values['uid'] = $uid;
     $this->drupalPost('agreement', $field_values, variable_get('agreement_submit_text', $this->not_set));
     $this->assertText(variable_get('agreement_message_failure', $this->not_set), t('Correct error message'));
 
@@ -78,7 +78,7 @@ class AgreementTestCase extends DrupalWebTestCase {
 }
 
 class AgreementSettingsTestCase extends AgreementTestCase {
-  
+
   public static function getInfo() {
     return array(
       'name' => '1. Agreement settings',
@@ -86,7 +86,7 @@ class AgreementSettingsTestCase extends AgreementTestCase {
       'group' => 'Agreement',
     );
   }
-  
+
   // Configure the agreement settings
   public function testAgreementSettings() {
 
@@ -148,7 +148,7 @@ class AgreementAgreementTestCase extends AgreementTestCase {
    * - test with different roles (roles in db should be out of order - see issue on d.o)
    * - test anonymous user - how?
    * - run through coder module
-   * 
+   *
    * Simpletest issues
    * - http://drupal.org/node/789192: Tests are listed in alphabetical order (would it make more sense to list them in the order they are defined in the .test file?)
    * - http://drupal.org/node/789188: No way to disable clear results after each complete test suite run: Even if you disable the "Clear results after each complete test suite run" option under settings, the simpletest_ tables are all removed from the db after the tests are run. Tested in 6.x-2.10 and 6.x-2.x-dev 3/15/2010.
