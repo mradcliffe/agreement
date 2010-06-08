@@ -30,27 +30,27 @@ class AgreementTestCase extends DrupalWebTestCase {
     $settings = array();
     $settings['agreement_text'] = $this->page_text;
     $settings['agreement_page_title'] = $this->page_title;
-    
+
     $this->privilegedUserLogin();
     $this->configureAgreementSettings($settings);
   }
-  
+
   protected function privilegedUserLogin() {
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array('configure agreement settings'));
     $this->drupalLogin($this->privileged_user);
   }
-  
-  protected function unprivilegedUserLogin($destination) {
+
+  protected function unprivilegedUserLogin($destination = 'user') {
     // Create and log in our unprivileged user.
     $this->unprivileged_user = $this->drupalCreateUser();
     $this->drupalLogin($this->unprivileged_user, $destination);
   }
-  
+
   protected function configureAgreementSettings($settings) {
     $this->drupalGet('admin/settings/agreement');
     $this->assertResponse(200, t('User is allowed to access agreement settings page.'));
- 
+
     $this->drupalPost('admin/settings/agreement', $settings, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved'), t('Agreement settings saved'));
   }
@@ -65,15 +65,15 @@ class AgreementTestCase extends DrupalWebTestCase {
   protected function isNotAgreementPage() {
     $this->assertNotEqual($this->base_url . '/' . variable_get('agreement_page_url', $this->not_set), $this->getUrl(), t('Not on agreement page') . ': ' . $this->getUrl());
   }
-  
+
   protected function isFrontPage() {
     $this->assertEqual($this->base_url . '/node', $this->getURL(), t('On front page') . ': ' . $this->getUrl());
   }
-  
+
   protected function isUserProfilePage($uid) {
     $this->assertEqual($this->base_url . '/user', $this->getURL(), t('On user profile page') . ': ' . $this->getUrl());
   }
-  
+
   protected function isUserProfileEditPage($uid) {
     $this->assertEqual($this->base_url . '/user' . $uid . '/edit', $this->getURL(), t('On user profile edit page') . ': ' . $this->getUrl());
   }
@@ -84,7 +84,7 @@ class AgreementTestCase extends DrupalWebTestCase {
     $this->drupalPost('agreement', $field_values, variable_get('agreement_submit_text', $this->not_set));
     $this->assertText(variable_get('agreement_message_failure', $this->not_set), t('Correct error message'));
   }
-  
+
   protected function submitAgreementFormWithAgreeing($uid) {
     // Submit with checking the I agree box
     $field_values['agree'] = '1';
@@ -92,8 +92,8 @@ class AgreementTestCase extends DrupalWebTestCase {
     $this->assertText(variable_get('agreement_message_success', $this->not_set), t('Correct success message'));
     $this->isNotAgreementPage();
   }
-  
-  protected function drupalLogin(stdClass $user, $destination = '/user') {
+
+  protected function drupalLogin(stdClass $user, $destination = 'user') {
     if ($this->loggedInUser) {
       $this->drupalLogout();
     }
@@ -104,8 +104,7 @@ class AgreementTestCase extends DrupalWebTestCase {
     );
     $this->drupalPost($destination, $edit, t('Log in'));
 
-    // If a "log out" link appears on the page, it is almost certainly because
-    // the login was successful.
+    // If a "log out" link appears on the page, it is almost certainly because the login was successful.
     $pass = $this->assertLink(t('Log out'), 0, t('User %name successfully logged in.', array('%name' => $user->name)), t('User login'));
 
     if ($pass) {
@@ -133,7 +132,7 @@ class AgreementDefaultsPrivilegedUserTestCase extends AgreementTestCase {
     // Go to front page, no agreement
     $this->drupalGet('node');
     $this->isNotAgreementPage();
-    
+
     // Go anywhere else, open agreement
     $this->drupalGet('admin');
     $this->isAgreementPage();
@@ -168,11 +167,11 @@ class AgreementDefaultsUnprivilegedUserTestCase extends AgreementTestCase {
 
     // Sent to agreement page
     $this->isAgreementPage();
-    
+
     // Go to front page, no agreement
     $this->drupalGet('node');
     $this->isNotAgreementPage();
-    
+
     // Go anywhere else, open agreement
     $this->drupalGet('user/' . $this->unprivileged_user->uid);
     $this->isAgreementPage();
@@ -195,44 +194,34 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
       'group' => 'Agreement',
     );
   }
-/*
+
   // Agreement only on front page
   public function testAgreement() {
-    $this->privilegedUserLogin();
-    $this->drupalGet('admin/settings/agreement');
+    variable_set('agreement_page_visibility_settings', 1);
+    variable_set('agreement_page_visibility_pages', '<front>');
 
-    $settings = array();
-    $settings['agreement_page_visibility_settings'] = 1;
-    $settings['agreement_page_visibility_pages'] = '<front>';
-    $this->configureAgreementSettings($settings);
-    
     $this->unprivilegedUserLogin();
 
     // Not sent to agreement page
     $this->isNotAgreementPage();
-    
+
     // Go to front page, open agreement
     $this->drupalGet('node');
     $this->isAgreementPage();
-    
+
     // Go anywhere else, no agreement
     $this->drupalGet('user/' . $this->unprivileged_user->uid);
     $this->isNotAgreementPage();
   }
-  
+
   // Agreement frequency
   public function testAgreementFrequency() {
     // A) Agreement required once
-    $this->privilegedUserLogin();
-    $this->drupalGet('admin/settings/agreement');
+    variable_set('agreement_page_visibility_settings', 1);
+    variable_set('agreement_page_visibility_pages', '<front>');
 
-    $settings = array();
-    $settings['agreement_page_visibility_settings'] = 1;
-    $settings['agreement_page_visibility_pages'] = '<front>';
-    $this->configureAgreementSettings($settings);
-    
     $this->unprivilegedUserLogin();
-    
+
     // Go to front page, open agreement
     $this->drupalGet('node');
     $this->isAgreementPage();
@@ -241,18 +230,13 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     // Log out, log back in, no agreement
     $this->drupalLogin($this->unprivileged_user);
     $this->drupalGet('node');
-    $this->isNotAgreementPage(); 
-    
-    // B) Agreement required on every login
-    $this->privilegedUserLogin();
-    $this->drupalGet('admin/settings/agreement');
+    $this->isNotAgreementPage();
 
-    $settings = array();
-    $settings['agreement_frequency'] = 1;
-    $this->configureAgreementSettings($settings);
-    
+    // B) Agreement required on every login
+    variable_set('agreement_frequency', 1);
+
     $this->drupalLogin($this->unprivileged_user);
-    
+
     // Go to front page, open agreement
     $this->drupalGet('node');
     $this->isAgreementPage();
@@ -261,9 +245,20 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     // Log out, log back in, open agreement
     $this->drupalLogin($this->unprivileged_user);
     $this->drupalGet('node');
-    $this->isAgreementPage(); 
+    $this->isAgreementPage();
+
+    // Change password, no agreement
+    $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
+    variable_set('agreement_page_visibility_pages', '');
+    $edit = array(
+      'pass[pass1]' => $pass = $this->randomString(),
+      'pass[pass2]' => $pass,
+    );
+    $this->drupalPost('user/' . $this->unprivileged_user->uid . '/edit', $edit, t('Save'));
+    $this->isNotAgreementPage();
+    $this->assertText(t('The changes have been saved.'), t('Password was changed'));
   }
-  */
+
   // Agreement destination
   public function testAgreementDestination() {
     // A) Agreement destination = blank
@@ -274,17 +269,12 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     // - user goes to regular get URL -> redirect to node/1
     // - user goes to user profile -> redirect to node/1
     // - user needs to change password -> redirect to user/%/edit
-    
-    // A) Agreement destination = blank
-    $this->privilegedUserLogin();
-    $this->drupalGet('admin/settings/agreement');
 
-    $settings = array();
-    $settings['agreement_success_destination'] = '';
-    $settings['agreement_page_visibility_settings'] = 0;
-    $settings['agreement_page_visibility_pages'] = '';
-    $this->configureAgreementSettings($settings);
-    
+    // A) Agreement destination = blank
+    variable_set('agreement_success_destination', '');
+    variable_set('agreement_page_visibility_settings', 0);
+    variable_set('agreement_page_visibility_pages', '');
+
     // Log in, open agreement, go to front page
     $this->unprivilegedUserLogin('/node');
     $this->isAgreementPage();
@@ -292,7 +282,7 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     $this->isAgreementPage();
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
     $this->isFrontPage();
-    
+
     // Log in, go somewhere other than front page, open agreement, go to user's original destination
     $this->unprivilegedUserLogin('/node/' . $this->node->uid);
     $this->isAgreementPage();
@@ -300,28 +290,14 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     $this->isAgreementPage();
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
     $this->assertEqual($this->base_url . '/node/'. $this->node->uid, $this->getURL(), t('User is redirected to original destination') . ' : ' . $this->getUrl());
-    
-    // Log in following password reset link, go somewhere other than front page, open agreement, go to user profile
-    /*
-    $this->drupalLogin($this->unprivileged_user);
-    $this->drupalGet('node');
-    $this->isAgreementPage(); 
-    $this->drupalGet('admin');
-    $this->isAgreementPage();
-    $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
-    $this->isUserProfilePage($this->unprivileged_user->uid);
-    */
-    
-    // B) Agreement destination = node/1
-    $this->privilegedUserLogin();
-    $this->drupalGet('admin/settings/agreement');
 
-    $settings = array();
-    $settings['agreement_success_destination'] = 'node/1';
-    $settings['agreement_page_visibility_settings'] = 0;
-    $settings['agreement_page_visibility_pages'] = '';
-    $this->configureAgreementSettings($settings);
-    
+    // TODO: Log in following password reset link, go somewhere other than front page, open agreement, go to user profile
+
+    // B) Agreement destination = node/1
+    variable_set('agreement_success_destination', 'node/1');
+    variable_set('agreement_page_visibility_settings', 0);
+    variable_set('agreement_page_visibility_pages', '');
+
     // Log in, open agreement, go to node/1
     $this->unprivilegedUserLogin('/node');
     $this->isAgreementPage();
@@ -329,36 +305,15 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     $this->isAgreementPage();
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
     $this->assertEqual($this->base_url . '/node/1', $this->getURL(), t('User is redirected to node 1') . ' : ' . $this->getUrl());
-    
+
     // Log in, go somewhere other than front page, open agreement, go to node/1
-    $this->unprivilegedUserLogin('/user');
+    $this->unprivilegedUserLogin('user');
     $this->isAgreementPage();
     $this->drupalGet('user/' . $this->unprivileged_user->uid . '/edit');
     $this->isAgreementPage();
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
     $this->assertEqual($this->base_url . '/node/1', $this->getURL(), t('User is redirected to node 1') . ' : ' . $this->getUrl());
 
-    // Log in following password reset link, go somewhere other than front page, open agreement, go to user profile
-    /*
-    $this->drupalLogin($this->unprivileged_user);
-    $this->drupalGet('node');
-    $this->isAgreementPage(); 
-    $this->drupalGet('admin');
-    $this->isAgreementPage();
-    $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
-    $this->isUserProfileEditPage($this->unprivileged_user->uid);
-    */
+    // TODO: Log in following password reset link, go somewhere other than front page, open agreement, go to user profile
   }
 }
-
-
-  /*
-   * Other things to test
-   * - test to ensure that logged in user is not required to re-accept the agreement if they change their password (put this under frequency)
-   * - how to determine % of test coverage?
-   * - run through coder module
-   *
-   * Simpletest issues
-   * - http://drupal.org/node/789192: Tests are listed in alphabetical order (would it make more sense to list them in the order they are defined in the .test file?)
-   * - http://drupal.org/node/789188: No way to disable clear results after each complete test suite run: Even if you disable the "Clear results after each complete test suite run" option under settings, the simpletest_ tables are all removed from the db after the tests are run. Tested in 6.x-2.10 and 6.x-2.x-dev 3/15/2010.
-   */
