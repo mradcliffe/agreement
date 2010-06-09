@@ -143,7 +143,7 @@ class AgreementDefaultsPrivilegedUserTestCase extends AgreementTestCase {
 
     // Try submitting agreement form
     $this->submitAgreementFormWithoutAgreeing($this->privileged_user->uid);
-    $this->submitAgreementFormWithAgreeing($$this->privileged_user->uid);
+    $this->submitAgreementFormWithAgreeing($this->privileged_user->uid);
 
     $this->drupalGet('admin');
     $this->isNotAgreementPage();
@@ -178,7 +178,7 @@ class AgreementDefaultsUnprivilegedUserTestCase extends AgreementTestCase {
 
     // Try submitting agreement form
     $this->submitAgreementFormWithoutAgreeing($this->unprivileged_user->uid);
-    $this->submitAgreementFormWithAgreeing($$this->unprivileged_user->uid);
+    $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
 
     $this->drupalGet('admin/settings/agreement');
     $this->assertResponse(403, t('User is not allowed to access agreement settings page.'));
