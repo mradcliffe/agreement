@@ -1,4 +1,3 @@
-$Id$ 
 
 Changes since DRUPAL-6--1:
 #704108 by pagaille: Appears to only work with node/number vs node/page-name
