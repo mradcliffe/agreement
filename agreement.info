@@ -1,4 +1,3 @@
-; $Id$
 name = "Agreement"
 description = "Module allows administrators to display an agreement to users of a particular role."
 core = 6.x
