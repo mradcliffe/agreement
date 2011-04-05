@@ -27,7 +27,7 @@ define('AGREEMENT_SUBMIT_TEXT',     t('Submit'));
  * Implementation of hook_perm().
  */
 function agreement_perm() {
-  return array('configure agreement settings');
+  return array('configure agreement settings', 'skip agreement');
 }
 
 /**
@@ -38,8 +38,9 @@ function agreement_init() {
   global $user;
 
   // Check to make sure the user belongs to an agreement-restricted role.
-  // The admin (uid = 1) is excluded from the agreement.
-  if ($user->uid != 1 && array_key_exists(variable_get('agreement_role', -1), $user->roles)) {
+  // The admin (uid = 1) is excluded from the agreement, as are members
+  // with the 'skip agreement' permission
+  if ($user->uid != 1 && array_key_exists(variable_get('agreement_role', -1), $user->roles) && !user_access('skip agreement')) {
     $agreement_status = _agreement_status($user->uid);
 
     // We will not redirect to the agreement page from these URLs.
