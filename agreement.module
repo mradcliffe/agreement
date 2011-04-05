@@ -38,7 +38,8 @@ function agreement_init() {
   global $user;
 
   // Check to make sure the user belongs to an agreement-restricted role.
-  if (array_key_exists(variable_get('agreement_role', -1), $user->roles)) {
+  // The admin (uid = 1) is excluded from the agreement.
+  if ($user->uid != 1 && array_key_exists(variable_get('agreement_role', -1), $user->roles)) {
     $agreement_status = _agreement_status($user->uid);
 
     // We will not redirect to the agreement page from these URLs.
@@ -48,7 +49,7 @@ function agreement_init() {
       'admin/settings/agreement',
     );
     
-    if ((!isset($agreement_status) || !$agreement_status) && !in_array($_GET['q'], $exceptions)) {
+    if ((!isset($agreement_status) || !$agreement_status) && !in_array($_GET['q'], $exceptions) && $user->uid != 1) {
       // Match path if necessary.
       if ($visibility_pages = check_plain(variable_get('agreement_page_visibility_pages', FALSE))) {
         // Convert path to lowercase. This allows comparison of the same path
