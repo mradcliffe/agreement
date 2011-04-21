@@ -6,14 +6,6 @@
  */
 
 /**
- * Implementation of hook_install().
- */
-function agreement_install() {
-  drupal_install_schema('agreement');
-  db_query("UPDATE {system} SET weight = 9999 WHERE name = 'agreement'");
-}
-
-/**
  * Implementation of hook_schema().
  */
 function agreement_schema() {
@@ -57,8 +49,6 @@ function agreement_schema() {
  * Implementation of hook_uninstall().
  */
 function agreement_uninstall() {
-  drupal_uninstall_schema('agreement');
-
   variable_del('agreement_role');
   variable_del('agreement_frequency');
   variable_del('agreement_text');

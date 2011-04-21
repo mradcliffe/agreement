@@ -47,10 +47,10 @@ class AgreementTestCase extends DrupalWebTestCase {
   }
 
   protected function configureAgreementSettings($settings) {
-    $this->drupalGet('admin/settings/agreement');
+    $this->drupalGet('admin/config/people/agreement');
     $this->assertResponse(200, t('User is allowed to access agreement settings page.'));
 
-    $this->drupalPost('admin/settings/agreement', $settings, t('Save configuration'));
+    $this->drupalPost('admin/config/people/agreement', $settings, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved'), t('Agreement settings saved'));
   }
 
@@ -125,7 +125,7 @@ class AgreementDefaultsPrivilegedUserTestCase extends AgreementTestCase {
   public function testAgreement() {
 
     // After save, re-open agreement settings
-    $this->assertEqual($this->getUrl(), $this->base_url . '/admin/settings/agreement', t('URL of settings page is correct') . ': ' . $this->getUrl());
+    $this->assertEqual($this->getUrl(), $this->base_url . '/admin/config/people/agreement', t('URL of settings page is correct') . ': ' . $this->getUrl());
     $this->assertTitle(t('Agreement settings') . $this->site_name, t('Page title of settings page is correct'));
 
     // Go to front page, no agreement
@@ -179,7 +179,7 @@ class AgreementDefaultsUnprivilegedUserTestCase extends AgreementTestCase {
     $this->submitAgreementFormWithoutAgreeing($this->unprivileged_user->uid);
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
 
-    $this->drupalGet('admin/settings/agreement');
+    $this->drupalGet('admin/config/people/agreement');
     $this->assertResponse(403, t('User is not allowed to access agreement settings page.'));
   }
 }
@@ -250,6 +250,7 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
     variable_set('agreement_page_visibility_pages', '');
     $edit = array(
+      'current_pass' => $this->unprivileged_user->pass_raw,
       'pass[pass1]' => $pass = $this->randomString(),
       'pass[pass2]' => $pass,
     );
@@ -283,12 +284,12 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     $this->isFrontPage();
 
     // Log in, go somewhere other than front page, open agreement, go to user's original destination
-    $this->unprivilegedUserLogin('/node/' . $this->node->uid);
+    $this->unprivilegedUserLogin('/node/' . $this->node->nid);
     $this->isAgreementPage();
     $this->drupalGet('/node');
     $this->isAgreementPage();
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
-    $this->assertEqual($this->base_url . '/node/'. $this->node->uid, $this->getURL(), t('User is redirected to original destination') . ' : ' . $this->getUrl());
+    $this->assertEqual($this->base_url . '/node/'. $this->node->nid, $this->getURL(), t('User is redirected to original destination') . ' : ' . $this->getUrl());
 
     // TODO: Log in following password reset link, go somewhere other than front page, open agreement, go to user profile
 

@@ -25,10 +25,19 @@ define('AGREEMENT_FORMAT',          1);
  *********************************************************************/
 
 /**
- * Implementation of hook_perm().
+ * Implementation of hook_permission().
  */
-function agreement_perm() {
-  return array('configure agreement settings', 'skip agreement');
+function agreement_permission() {
+  return array(
+    'configure agreement settings' => array(
+      'title' => t('Configure agreement'),
+      'description' => t('Grants the user access to configure agreement settings.'),
+    ),
+    'skip agreement' => array(
+      'title' => t('Skip agreement'),
+      'description' => t('Grants the user access to bypass agreements.'),
+    ),
+  );
 }
 
 /**
@@ -45,9 +54,9 @@ function agreement_init() {
 
     // We will not redirect to the agreement page from these URLs.
     $exceptions = array(
-      check_plain(variable_get('agreement_page_url', AGREEMENT_PAGE_URL)),
-      'logout',
-      'admin/settings/agreement',
+      variable_get('agreement_page_url', AGREEMENT_PAGE_URL),
+      'user/logout',
+      'admin/config/people/agreement',
     );
     
     if ((!isset($agreement_status) || !$agreement_status) && !in_array($_GET['q'], $exceptions)) {
@@ -59,7 +68,7 @@ function agreement_init() {
 
         // check_plain() converts <front> to &lt;front&gt; so need to convert
         // it back before matching
-        $pages = str_replace('&lt;front&gt;', '<front>', $pages);
+        $pages = html_entity_decode($pages);
 
         // Convert the Drupal path to lowercase
         $path = drupal_strtolower(drupal_get_path_alias($_GET['q']));
@@ -102,7 +111,7 @@ function agreement_init() {
 function agreement_menu() {
   $items = array();
 
-  $items['admin/settings/agreement'] = array(
+  $items['admin/config/people/agreement'] = array(
     'access arguments'  => array('configure agreement settings'),
     'description'       => 'Configure settings for the Agreement module.',
     'page callback'     => 'drupal_get_form',
@@ -123,18 +132,18 @@ function agreement_menu() {
 }
 
 /**
- * Implementation of hook_user().
+ * Implementation of hook_user_update().
  */
-function agreement_user($op, &$edit, &$account, $category = NULL) {
-  if ($op == 'after_update' && variable_get('agreement_frequency', 0) == 1) {
+function agreement_user_update(&$edit, &$account, $category = NULL) {
+  if (variable_get('agreement_frequency', 0) == 1) {
     // Don't require user to re-accept agreement if they've just changed their pwd
     if (!empty($edit['pass'])) {
       $uid = $account->uid;
       if ($uid == $GLOBALS['user']->uid) {
         // To help distinguish password-generated agreements from form-based agreements
         $agree = 2;
-        db_query("INSERT INTO {agreement} (uid, agreed, sid, agreed_date)
-          VALUES (%d, %d, '%s', %d)", $uid, $agree, session_id(), time());
+        $edit = (object) array('uid' => $uid, 'agreed' => $agree, 'sid' => session_id(), 'agreed_date' => time());
+        drupal_write_record('agreement', $edit);
       }
     }
   }
@@ -146,9 +155,7 @@ function agreement_user($op, &$edit, &$account, $category = NULL) {
 function agreement_theme($existing, $type, $theme, $path) {
   return array(
     'agreement_page' => array(
-      'arguments' => array(
-        'form' => NULL,
-      ),
+      'render element' => 'form',
     ),
   );
 }
@@ -177,7 +184,7 @@ function agreement_mail($key, &$message, $params) {
  */
 function agreement_views_api() {
   return array(
-    'api' => 2,
+    'api' => 3,
     'path' => drupal_get_path('module', 'agreement'),
   );
 }
@@ -373,7 +380,8 @@ function agreement_page() {
 
   $text = check_markup(variable_get('agreement_text', ''), variable_get('agreement_format', AGREEMENT_FORMAT), FALSE);
 
-  $output = theme('agreement_page', drupal_get_form('agreement_form', $text, _agreement_status(), $user->uid));
+  $form = drupal_get_form('agreement_form', $text, _agreement_status(), $user->uid);
+  $output = theme('agreement_page', array('form' => $form));
   
   return $output;
 }
@@ -387,9 +395,9 @@ function agreement_page() {
  *
  * @ingroup themeable
  */
-function theme_agreement_page($form) {
-  $output = $form;
-  return $output;
+function theme_agreement_page(&$variables) {
+  drupal_set_title(check_plain(variable_get('agreement_page_title', AGREEMENT_PAGE_TITLE)));
+  return $variables['form'];
 }
 
 /*********************************************************************
@@ -403,20 +411,17 @@ function theme_agreement_page($form) {
  * @see agreement_form_validate()
  * @see agreement_form_submit()
  */
-function agreement_form(&$form_state, $text, $status = 0, $uid = -1) {
+function agreement_form($form, &$form_state, $text, $status = 0, $uid = -1) {
   $form = array();
 
   $form['agreement_terms'] = array(
-    '#value'  => $text,
+    '#markup'  => $text,
     '#type'   => 'item',
     '#prefix' => '<div class="agreement-text">',
     '#suffix' => '</div>',
   );
 
-  $form['uid'] = array(
-    '#value'  => $uid,
-    '#type'   => 'hidden',
-  );
+  $form_state['uid'] = $uid;
 
   if (!$status) {
     $form['agree'] = array(
@@ -455,12 +460,14 @@ function agreement_form_validate($form, &$form_state) {
  * @see agreement_form_validate()
  */
 function agreement_form_submit($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
+  $uid = $form_state['uid'];
   $agree = $form_state['values']['agree'];
-
-  db_query("DELETE FROM {agreement} WHERE uid='%d'", $uid);
-  db_query("INSERT INTO {agreement} (uid, agreed, sid, agreed_date) VALUES (%d, %d, '%s', %d)",
-            $uid, $agree, session_id(), time());
+  
+  $delete = db_delete('agreement');
+  $delete->condition('uid', $uid, '=')->execute();
+  
+  $edit = (object) array('uid' => $uid, 'agreed' => $agree, 'sid' => session_id(), 'agreed_date' => time());
+  drupal_write_record('agreement', $edit);
 
   drupal_set_message(check_plain(variable_get('agreement_message_success', AGREEMENT_MESSAGE_SUCCESS)));
 
@@ -491,8 +498,6 @@ function agreement_form_submit($form, &$form_state) {
 
   unset($_SESSION['agreement_destination']);
   $form_state['redirect'] = $redirect;
-  
-  return;
 }
 
 /*********************************************************************
@@ -515,16 +520,16 @@ function _agreement_status($uid = NULL) {
   // Make sure we weren't passed some garbage as $uid
   $uid = (int) $uid;
 
+  $query = db_select('agreement', 'a');
+  $query
+    ->fields('a', array('agreed'))
+    ->condition('a.uid', $uid, '=')
+    ->range(0, 1);
+
   // Must agree on every login
   if (variable_get('agreement_frequency', 0) == 1) {
-    $query = "SELECT agreed FROM {agreement} WHERE uid = %d and sid = '%s'";
-    $result = db_query_range($query, array($uid, session_id()), 0, 1);
-  }
-  // Must only agree once
-  else {
-    $query = "SELECT agreed FROM {agreement} WHERE uid = %d";
-    $result = db_query_range($query, $uid, 0, 1);
+    $query->condition('a.sid', session_id(), '=');
   }
 
-  return (bool) db_result($result);
+  return $query->execute()->fetchField();
 }
