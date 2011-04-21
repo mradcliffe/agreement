@@ -6,6 +6,18 @@
  */
 
 /**
+ * Implementation of hook_install().
+ */
+function agreement_install() {
+  // Set module weight.
+  $n = db_update('system')->condition('name', 'agreement', '=')->fields(array('weight' => 9999))->execute();
+
+  if ($n <> 1) {
+    drupal_set_message(t('Could not set agreement module weight.'), 'error');
+  }
+}
+
+/**
  * Implementation of hook_schema().
  */
 function agreement_schema() {
