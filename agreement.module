@@ -153,6 +153,21 @@ function agreement_theme($existing, $type, $theme, $path) {
   );
 }
 
+/**
+ * Implementation of hook_mail().
+ */
+function agreement_mail($key, &$message, $params) {
+  switch($key) {
+    case 'notice':
+      $variables = user_mail_tokens($params['account'], $message['language']);
+      
+      $message['subject'] = t('!sitename: !username accepted agreement', $variables);
+      $message['body'][] = t('The user has accepted the agreement.');
+      
+      break;
+  }
+}
+
 /*********************************************************************
  MODULE HOOKS
  *********************************************************************/
@@ -335,6 +350,13 @@ function agreement_settings() {
                             ),
     );
 
+  $form['agreement_email_recipient'] = array(
+    '#type'           => 'textfield',
+    '#title'          => t('Email notification of agreement acceptance to'),
+    '#default_value'  => variable_get('agreement_email_recipient', ''),
+    '#description'    => t('If an email address is entered here, an email will be sent to that email address each time a user agrees. To have no email sent, leave this blank.'),
+  );
+
   return system_settings_form($form);
 }
 
@@ -441,6 +463,12 @@ function agreement_form_submit($form, &$form_state) {
             $uid, $agree, session_id(), time());
 
   drupal_set_message(check_plain(variable_get('agreement_message_success', AGREEMENT_MESSAGE_SUCCESS)));
+
+  // Send email notifying of acceptance if admin has set an email address.
+  if ($to = variable_get('agreement_email_recipient', '')) {
+    $params['account'] = user_load($uid);
+    drupal_mail('agreement', 'notice', $to, user_preferred_language($params['account']), $params);
+  }
 
   $agreement_success_destination = check_plain(variable_get('agreement_success_destination', ''));
   $agreement_success_destination = str_replace('&lt;front&gt;', '<front>', $agreement_success_destination);
