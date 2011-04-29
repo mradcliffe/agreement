@@ -38,9 +38,8 @@ function agreement_init() {
   global $user;
 
   // Check to make sure the user belongs to an agreement-restricted role.
-  // The admin (uid = 1) is excluded from the agreement, as are members
-  // with the 'skip agreement' permission
-  if ($user->uid != 1 && array_key_exists(variable_get('agreement_role', -1), $user->roles) && !user_access('skip agreement')) {
+  // Members with the 'skip agreement' permission are excluded from the agreement
+  if (array_key_exists(variable_get('agreement_role', -1), $user->roles) && !user_access('skip agreement')) {
     $agreement_status = _agreement_status($user->uid);
 
     // We will not redirect to the agreement page from these URLs.
@@ -50,14 +49,14 @@ function agreement_init() {
       'admin/settings/agreement',
     );
     
-    if ((!isset($agreement_status) || !$agreement_status) && !in_array($_GET['q'], $exceptions) && $user->uid != 1) {
+    if ((!isset($agreement_status) || !$agreement_status) && !in_array($_GET['q'], $exceptions)) {
       // Match path if necessary.
       if ($visibility_pages = check_plain(variable_get('agreement_page_visibility_pages', FALSE))) {
         // Convert path to lowercase. This allows comparison of the same path
         // with different case. Ex: /Page, /page, /PAGE.
         $pages = drupal_strtolower($visibility_pages);
 
-        //check_plain() converts <front> to &lt;front&gt; so need to convert
+        // check_plain() converts <front> to &lt;front&gt; so need to convert
         // it back before matching
         $pages = str_replace('&lt;front&gt;', '<front>', $pages);
 
