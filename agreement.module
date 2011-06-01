@@ -18,7 +18,7 @@ define('AGREEMENT_MESSAGE_SUCCESS', t('Thank you for accepting our agreement.'))
 define('AGREEMENT_MESSAGE_FAILURE', t('You must accept our agreement to continue.'));
 define('AGREEMENT_CHECKBOX_TEXT',   t('I agree.'));
 define('AGREEMENT_SUBMIT_TEXT',     t('Submit'));
-define('AGREEMENT_FORMAT',          1);
+define('AGREEMENT_FORMAT',          1); 
 
 /*********************************************************************
  DRUPAL HOOKS
