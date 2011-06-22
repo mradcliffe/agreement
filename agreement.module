@@ -381,7 +381,7 @@ function agreement_page() {
 
   $agreement = variable_get('agreement_text', array('value' => '', 'format' => filter_default_format()));
 
-  $text = check_markup($agreement['text'], $agreement['format'], FALSE);
+  $text = check_markup($agreement['value'], $agreement['format'], FALSE);
 
   $form = drupal_get_form('agreement_form', $text, _agreement_status(), $user->uid);
   $output = theme('agreement_page', array('form' => $form));
