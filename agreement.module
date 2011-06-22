@@ -142,7 +142,7 @@ function agreement_user_update(&$edit, &$account, $category = NULL) {
       if ($uid == $GLOBALS['user']->uid) {
         // To help distinguish password-generated agreements from form-based agreements
         $agree = 2;
-        $edit = (object) array('uid' => $uid, 'agreed' => $agree, 'sid' => session_id(), 'agreed_date' => time());
+        $edit = (object) array('uid' => $uid, 'agreed' => $agree, 'sid' => session_id(), 'agreed_date' => REQUEST_TIME);
         drupal_write_record('agreement', $edit);
       }
     }
@@ -381,7 +381,7 @@ function agreement_page() {
 
   $agreement = variable_get('agreement_text', array('value' => '', 'format' => filter_default_format()));
 
-  $text = check_markup($agreement['value'], $agreement['format'], FALSE);
+  $text = check_markup($agreement['value'], $agreement['format']);
 
   $form = drupal_get_form('agreement_form', $text, _agreement_status(), $user->uid);
   $output = theme('agreement_page', array('form' => $form));
@@ -399,7 +399,7 @@ function agreement_page() {
  * @ingroup themeable
  */
 function theme_agreement_page(&$variables) {
-  drupal_set_title(check_plain(variable_get('agreement_page_title', AGREEMENT_PAGE_TITLE)));
+  drupal_set_title(variable_get('agreement_page_title', AGREEMENT_PAGE_TITLE));
   return $variables['form'];
 }
 
@@ -469,7 +469,7 @@ function agreement_form_submit($form, &$form_state) {
   $delete = db_delete('agreement');
   $delete->condition('uid', $uid, '=')->execute();
   
-  $edit = (object) array('uid' => $uid, 'agreed' => $agree, 'sid' => session_id(), 'agreed_date' => time());
+  $edit = (object) array('uid' => $uid, 'agreed' => $agree, 'sid' => session_id(), 'agreed_date' => REQUEST_TIME);
   drupal_write_record('agreement', $edit);
 
   drupal_set_message(check_plain(variable_get('agreement_message_success', AGREEMENT_MESSAGE_SUCCESS)));
