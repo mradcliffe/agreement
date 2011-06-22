@@ -18,7 +18,7 @@ define('AGREEMENT_MESSAGE_SUCCESS', t('Thank you for accepting our agreement.'))
 define('AGREEMENT_MESSAGE_FAILURE', t('You must accept our agreement to continue.'));
 define('AGREEMENT_CHECKBOX_TEXT',   t('I agree.'));
 define('AGREEMENT_SUBMIT_TEXT',     t('Submit'));
-define('AGREEMENT_FORMAT',          1); 
+define('AGREEMENT_FORMAT',          filter_default_format()); 
 
 /*********************************************************************
  DRUPAL HOOKS
@@ -258,15 +258,16 @@ function agreement_settings() {
     '#type'           => 'select',
   );
 
+  $text = variable_get('agreement_text', array('value' => '', 'format' => filter_default_format()));
+
   $form['agreement_text'] = array(
     '#description'    => t('This is the agreement text.'),
-    '#default_value'  => variable_get('agreement_text', ''),
+    '#default_value'  => $text['value'],
     '#title'          => t('Agreement Text'),
     '#rows'           => 12,
-    '#type'           => 'textarea',
+    '#type'           => 'text_format',
+    '#format'         => $text['format'],
   );
-
-  $form['agreement_format'] = filter_form(variable_get('agreement_format', AGREEMENT_FORMAT), NULL, array('agreement_format'));
 
   $form['agreement_page_title'] = array(
     '#description'    => t('What should the title of the agreement page be?'),
@@ -378,7 +379,9 @@ function agreement_page() {
     drupal_goto('<front>');
   }
 
-  $text = check_markup(variable_get('agreement_text', ''), variable_get('agreement_format', AGREEMENT_FORMAT), FALSE);
+  $agreement = variable_get('agreement_text', array('value' => '', 'format' => filter_default_format()));
+
+  $text = check_markup($agreement['text'], $agreement['format'], FALSE);
 
   $form = drupal_get_form('agreement_form', $text, _agreement_status(), $user->uid);
   $output = theme('agreement_page', array('form' => $form));
