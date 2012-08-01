@@ -1,5 +1,7 @@
+#1411370 by pagaille: fix for views so that user still listed even if no agreement for that user
+#1336644 by pagaille: $form vs $form_state
 #1009980 by jvandyk: Email notification support
-#711908 by yuriy.babenko: Added input format support
+#711908  by yuriy.babenko: Added input format support
 #1116380 by yuriy.babenko: Added 'skip agreement' permission
 #1116370 by yuriy.babenko: Excluded uid = 1 from agreement
 #704108 by pagaille: Appears to only work with node/number vs node/page-name

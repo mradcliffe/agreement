@@ -193,7 +193,7 @@ function agreement_views_data() {
     'users' => array(
       'left_field' => 'uid',
       'field' => 'uid',
-      'type' => 'inner',
+      'type' => 'left',
     ),
   );
 
@@ -403,7 +403,7 @@ function theme_agreement_page($form) {
  * @see agreement_form_validate()
  * @see agreement_form_submit()
  */
-function agreement_form($form, $text, $status = 0, $uid = -1) {
+function agreement_form(&$form_state, $text, $status = 0, $uid = -1) {
   $form = array();
 
   $form['agreement_terms'] = array(
