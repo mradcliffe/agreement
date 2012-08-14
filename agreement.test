@@ -23,13 +23,13 @@ class AgreementTestCase extends DrupalWebTestCase {
     $this->page_text = $this->randomName(16);
     $this->not_set = $this->randomName(32);
     $this->node = $this->drupalCreateNode();
-    
+
     $settings = array(
       "agreement_page_title" => $this->page_title,
       "agreement_text[value]" => $this->page_text,
       "agreement_text[format]" => filter_default_format(),
     );
-    
+
     $this->privilegedUserLogin();
     $this->configureAgreementSettings($settings);
   }
