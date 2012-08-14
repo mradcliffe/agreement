@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Tests for the Agreement module
+ * Tests for Agreement module.
  */
 
 class AgreementTestCase extends DrupalWebTestCase {
@@ -25,18 +25,20 @@ class AgreementTestCase extends DrupalWebTestCase {
     $this->page_text = $this->randomName(16);
     $this->not_set = $this->randomName(32);
     $this->node = $this->drupalCreateNode();
-
-    $settings = array();
-    $settings['agreement_text'] = $this->page_text;
-    $settings['agreement_page_title'] = $this->page_title;
-
+    
+    $settings = array(
+      "agreement_page_title" => $this->page_title,
+      "agreement_text[value]" => $this->page_text,
+      "agreement_text[format]" => filter_default_format(),
+    );
+    
     $this->privilegedUserLogin();
     $this->configureAgreementSettings($settings);
   }
 
   protected function privilegedUserLogin() {
     // Create and log in our privileged user.
-    $this->privileged_user = $this->drupalCreateUser(array('configure agreement settings'));
+    $this->privileged_user = $this->drupalCreateUser(array('administer agreements'));
     $this->drupalLogin($this->privileged_user);
   }
 
@@ -99,7 +101,7 @@ class AgreementTestCase extends DrupalWebTestCase {
 
     $edit = array(
       'name' => $user->name,
-      'pass' => $user->pass_raw
+      'pass' => $user->pass_raw,
     );
     $this->drupalPost($destination, $edit, t('Log in'));
 
@@ -289,7 +291,7 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     $this->drupalGet('/node');
     $this->isAgreementPage();
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
-    $this->assertEqual($this->base_url . '/node/'. $this->node->nid, $this->getURL(), t('User is redirected to original destination') . ' : ' . $this->getUrl());
+    $this->assertEqual($this->base_url . '/node/' . $this->node->nid, $this->getURL(), t('User is redirected to original destination') . ' : ' . $this->getUrl());
 
     // TODO: Log in following password reset link, go somewhere other than front page, open agreement, go to user profile
 

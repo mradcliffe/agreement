@@ -2,23 +2,23 @@
 
 /**
  * @file
- * Install, update and uninstall functions for the Agreement module.
+ * Install, update and uninstall functions for Agreement module.
  */
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  */
 function agreement_install() {
   // Set module weight.
   $n = db_update('system')->condition('name', 'agreement', '=')->fields(array('weight' => 9999))->execute();
 
   if ($n <> 1) {
-    drupal_set_message(t('Could not set agreement module weight.'), 'error');
+    drupal_set_message(st('Could not set agreement module weight.'), 'error');
   }
 }
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function agreement_schema() {
   $schema['agreement'] = array(
@@ -49,16 +49,14 @@ function agreement_schema() {
         'not null' => TRUE,
     ),
   ),
-    'primary key' => array(
-      'id',
-    ),
+    'primary key' => array('id'),
   );
 
   return $schema;
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function agreement_uninstall() {
   variable_del('agreement_role');
@@ -73,22 +71,6 @@ function agreement_uninstall() {
   variable_del('agreement_success_destination');
   variable_del('agreement_page_visibility_settings');
   variable_del('agreement_page_visibility_pages');
+  variable_del('agreement_email_recipient');
 }
 
-function agreement_update_6000() {
-  $ret = array();
-  db_drop_index($ret, 'agreement', 'id');
-  db_add_field($ret, 'agreement', 'sid', array(
-    'type' => 'varchar',
-    'length' => 46,
-    )
-  );
-  db_add_field($ret, 'agreement', 'agreed_date', array(
-    'type' => 'int',
-    'unsigned' => TRUE,
-    'not null' => TRUE,
-    )
-  );
-
-  return $ret;
-}

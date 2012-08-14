@@ -8,40 +8,30 @@
  * before accessing any site content.
  */
 
-/*********************************************************************
- CONFIG
- *********************************************************************/
-
 define('AGREEMENT_PAGE_URL',       'agreement');
 define('AGREEMENT_PAGE_TITLE',      t('Our Agreement'));
 define('AGREEMENT_MESSAGE_SUCCESS', t('Thank you for accepting our agreement.'));
 define('AGREEMENT_MESSAGE_FAILURE', t('You must accept our agreement to continue.'));
 define('AGREEMENT_CHECKBOX_TEXT',   t('I agree.'));
 define('AGREEMENT_SUBMIT_TEXT',     t('Submit'));
-define('AGREEMENT_FORMAT',          filter_default_format()); 
-
-/*********************************************************************
- DRUPAL HOOKS
- *********************************************************************/
+define('AGREEMENT_FORMAT',          filter_default_format());
 
 /**
- * Implementation of hook_permission().
+ * Implements hook_permission().
  */
 function agreement_permission() {
   return array(
-    'configure agreement settings' => array(
-      'title' => t('Configure agreement'),
-      'description' => t('Grants the user access to configure agreement settings.'),
-    ),
-    'skip agreement' => array(
-      'title' => t('Skip agreement'),
-      'description' => t('Grants the user access to bypass agreements.'),
-    ),
+    'administer agreements' => array(
+      'title' => t('Administer agreements'),
+  ),
+    'bypass agreement' => array(
+      'title' => t('Bypass agreement'),
+  ),
   );
 }
 
 /**
- * Implementation of hook_init().
+ * Implements hook_init().
  */
 function agreement_init() {
   // If the user hasn't already agreed, redirect them to the agreement page.
@@ -54,11 +44,11 @@ function agreement_init() {
 
     // We will not redirect to the agreement page from these URLs.
     $exceptions = array(
-      variable_get('agreement_page_url', AGREEMENT_PAGE_URL),
+    variable_get('agreement_page_url', AGREEMENT_PAGE_URL),
       'user/logout',
       'admin/config/people/agreement',
     );
-    
+
     if ((!isset($agreement_status) || !$agreement_status) && !in_array($_GET['q'], $exceptions)) {
       // Match path if necessary.
       if ($visibility_pages = check_plain(variable_get('agreement_page_visibility_pages', FALSE))) {
@@ -72,13 +62,13 @@ function agreement_init() {
 
         // Convert the Drupal path to lowercase
         $path = drupal_strtolower(drupal_get_path_alias($_GET['q']));
-        
+
         // Compare the lowercase internal and lowercase path alias (if any).
         $page_match = drupal_match_path($path, $pages);
         if ($path != $_GET['q']) {
           $page_match = $page_match || drupal_match_path($_GET['q'], $pages);
         }
-        
+
         // When $visibility_settings has a value of 0, the agreement is displayed on all pages except
         // those listed in $pages. When set to 1, it is displayed only on those pages listed in $pages.
         $page_match = !(check_plain(variable_get('agreement_page_visibility_settings', 0)) xor $page_match);
@@ -86,7 +76,7 @@ function agreement_init() {
       else {
         $page_match = TRUE;
       }
-      
+
       if ($page_match) {
         // Save intended destination
         if (!isset($_SESSION['agreement_destination'])) {
@@ -97,7 +87,7 @@ function agreement_init() {
             $_SESSION['agreement_destination'] = $_GET['q'];
           }
         }
-        
+
         drupal_goto(check_plain(variable_get('agreement_page_url', AGREEMENT_PAGE_URL)));
         exit();
       }
@@ -106,13 +96,13 @@ function agreement_init() {
 }
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function agreement_menu() {
   $items = array();
 
   $items['admin/config/people/agreement'] = array(
-    'access arguments'  => array('configure agreement settings'),
+    'access arguments'  => array('administer agreements'),
     'description'       => 'Configure settings for the Agreement module.',
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('agreement_settings'),
@@ -132,7 +122,7 @@ function agreement_menu() {
 }
 
 /**
- * Implementation of hook_user_update().
+ * Implements hook_user_update().
  */
 function agreement_user_update(&$edit, &$account, $category = NULL) {
   if (variable_get('agreement_frequency', 0) == 1) {
@@ -150,37 +140,33 @@ function agreement_user_update(&$edit, &$account, $category = NULL) {
 }
 
 /**
- * Implementation of hook_theme().
+ * Implements hook_theme().
  */
 function agreement_theme($existing, $type, $theme, $path) {
   return array(
     'agreement_page' => array(
       'render element' => 'form',
-    ),
+  ),
   );
 }
 
 /**
- * Implementation of hook_mail().
+ * Implements hook_mail().
  */
 function agreement_mail($key, &$message, $params) {
-  switch($key) {
+  switch ($key) {
     case 'notice':
       $variables = user_mail_tokens($params['account'], $message['language']);
-      
+
       $message['subject'] = t('!sitename: !username accepted agreement', $variables);
       $message['body'][] = t('The user has accepted the agreement.');
-      
+
       break;
   }
 }
 
-/*********************************************************************
- MODULE HOOKS
- *********************************************************************/
-
 /**
- * Implementation of hook_views_api().
+ * Implements hook_views_api().
  */
 function agreement_views_api() {
   return array(
@@ -190,7 +176,7 @@ function agreement_views_api() {
 }
 
 /**
- * Implementation of hook_views_data().
+ * Implements hook_views_data().
  */
 function agreement_views_data() {
   $data = array();
@@ -201,7 +187,7 @@ function agreement_views_data() {
       'left_field' => 'uid',
       'field' => 'uid',
       'type' => 'left',
-    ),
+  ),
   );
 
   $data['agreement']['agreed_date'] = array(
@@ -210,21 +196,17 @@ function agreement_views_data() {
     'field'   => array(
       'handler' => 'views_handler_field_date',
       'click sortable' => TRUE,
-    ),
+  ),
     'filter'  => array(
       'handler' => 'views_handler_filter_date',
-    ),
+  ),
     'sort'    => array(
       'handler' => 'views_handler_sort_date',
-    ),
+  ),
   );
 
   return $data;
 }
- 
-/*********************************************************************
- CALLBACKS
- *********************************************************************/
 
 /**
  * Callback for admin/settings/agreement
@@ -258,7 +240,7 @@ function agreement_settings() {
     '#type'           => 'select',
   );
 
-  $text = variable_get('agreement_text', array('value' => '', 'format' => filter_default_format()));
+  $text = variable_get('agreement_text', array('value' => '', 'format' => AGREEMENT_FORMAT));
 
   $form['agreement_text'] = array(
     '#description'    => t('This is the agreement text.'),
@@ -311,9 +293,9 @@ function agreement_settings() {
     '#description'    => t('What page should be displayed after the user accepts the agreement? Leave blank
                             to go to original destination that triggered the agreement. %front is the front
                             page. Users who log in via the one-time login link will always be redirected to
-                            their user profile to change their password.', 
-                            array('%front' => '<front>')
-                          ),
+                            their user profile to change their password.',
+  array('%front' => '<front>')
+  ),
     '#default_value'  => variable_get('agreement_success_destination', ''),
     '#title'          => t('Agreement Success Destination'),
     '#type'           => 'textfield',
@@ -332,40 +314,40 @@ function agreement_settings() {
     '#collapsible'    => TRUE,
   );
 
-    $form['page_visibility']['agreement_page_visibility_settings'] = array(
+  $form['page_visibility']['agreement_page_visibility_settings'] = array(
       '#type'           => 'radios',
       '#title'          => t('Show agreement on specific pages'),
       '#options'        => array(
-                             t('Show on every page except the listed pages.'),
-                             t('Show on only the listed pages.')
-                           ),
+  t('Show on every page except the listed pages.'),
+  t('Show on only the listed pages.')
+  ),
       '#required'       => TRUE,
       '#default_value'  => variable_get('agreement_page_visibility_settings', 0),
-    );
-    
-    $form['page_visibility']['agreement_page_visibility_pages'] = array(
+  );
+
+  $form['page_visibility']['agreement_page_visibility_pages'] = array(
       '#type'           => 'textarea',
       '#title'          => t('Pages'),
       '#default_value'  => variable_get('agreement_page_visibility_pages', '<front>'),
       '#description'    => t("Enter one page per line as Drupal paths. The '*' character is a wildcard. Example paths
                               are %blog for the blog page and %blog-wildcard for every personal blog. %front is the
                               front page.",
-                              array(
-                                '%blog'           => 'blog', 
+  array(
+                                '%blog'           => 'blog',
                                 '%blog-wildcard'  => 'blog/*',
                                 '%front'          => '<front>'
-                              )
-                            ),
-    );
+                                )
+                                ),
+                                );
 
-  $form['agreement_email_recipient'] = array(
+                                $form['agreement_email_recipient'] = array(
     '#type'           => 'textfield',
     '#title'          => t('Email notification of agreement acceptance to'),
     '#default_value'  => variable_get('agreement_email_recipient', ''),
     '#description'    => t('If an email address is entered here, an email will be sent to that email address each time a user agrees. To have no email sent, leave this blank.'),
-  );
+                                );
 
-  return system_settings_form($form);
+                                return system_settings_form($form);
 }
 
 /**
@@ -379,19 +361,15 @@ function agreement_page() {
     drupal_goto('<front>');
   }
 
-  $agreement = variable_get('agreement_text', array('value' => '', 'format' => filter_default_format()));
+  $agreement = variable_get('agreement_text', array('value' => '', 'format' => AGREEMENT_FORMAT));
 
   $text = check_markup($agreement['value'], $agreement['format']);
 
   $form = drupal_get_form('agreement_form', $text, _agreement_status(), $user->uid);
   $output = theme('agreement_page', array('form' => $form));
-  
+
   return $output;
 }
-
-/*********************************************************************
- THEMING
- *********************************************************************/
 
 /**
  * Format the agreement page.
@@ -402,10 +380,6 @@ function theme_agreement_page(&$variables) {
   drupal_set_title(variable_get('agreement_page_title', AGREEMENT_PAGE_TITLE));
   return $variables['form'];
 }
-
-/*********************************************************************
- FORMS
- *********************************************************************/
 
 /**
  * FAPI definition for the agreement form.
@@ -465,10 +439,10 @@ function agreement_form_validate($form, &$form_state) {
 function agreement_form_submit($form, &$form_state) {
   $uid = $form_state['uid'];
   $agree = $form_state['values']['agree'];
-  
+
   $delete = db_delete('agreement');
   $delete->condition('uid', $uid, '=')->execute();
-  
+
   $edit = (object) array('uid' => $uid, 'agreed' => $agree, 'sid' => session_id(), 'agreed_date' => REQUEST_TIME);
   drupal_write_record('agreement', $edit);
 
@@ -503,10 +477,6 @@ function agreement_form_submit($form, &$form_state) {
   $form_state['redirect'] = $redirect;
 }
 
-/*********************************************************************
- INTERNAL
- *********************************************************************/
-
 /**
  * Internal function to get the user's "agreement status".
  * @return TRUE if agreement found in db.
@@ -525,9 +495,9 @@ function _agreement_status($uid = NULL) {
 
   $query = db_select('agreement', 'a');
   $query
-    ->fields('a', array('agreed'))
-    ->condition('a.uid', $uid, '=')
-    ->range(0, 1);
+  ->fields('a', array('agreed'))
+  ->condition('a.uid', $uid, '=')
+  ->range(0, 1);
 
   // Must agree on every login
   if (variable_get('agreement_frequency', 0) == 1) {
