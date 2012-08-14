@@ -278,7 +278,7 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
     // Log in, open agreement, go to front page
     $this->unprivilegedUserLogin('/node');
     $this->isAgreementPage();
-    $this->drupalGet('node/' . $this->node->uid);
+    $this->drupalGet('node/' . $this->node->nid);
     $this->isAgreementPage();
     $this->submitAgreementFormWithAgreeing($this->unprivileged_user->uid);
     $this->isFrontPage();
