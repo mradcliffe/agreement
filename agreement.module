@@ -378,7 +378,6 @@ function agreement_page() {
  * @ingroup themeable
  */
 function theme_agreement_page(&$variables) {
-  drupal_set_title(variable_get('agreement_page_title', AGREEMENT_PAGE_TITLE));
   return $variables['form'];
 }
 
