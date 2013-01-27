@@ -156,12 +156,13 @@ function agreement_theme($existing, $type, $theme, $path) {
 function agreement_mail($key, &$message, $params) {
   switch ($key) {
     case 'notice':
-      $variables = user_mail_tokens($params['account'], $message['language']);
-
-      $message['subject'] = t('!sitename: !username accepted agreement', $variables);
-      $message['body'][] = t('The user has accepted the agreement.');
-
-      break;
+      $variables = array(
+        '!site-name' => variable_get('site_name', 'Drupal'),
+        '!username' => format_username($params['account']),
+      );
+    $message['subject'] = t('!site-name: !username accepted agreement', $variables, array('langcode' => $message['language']->language));
+    $message['body'][] = t('The user has accepted the agreement.');
+    break;
   }
 }
 
