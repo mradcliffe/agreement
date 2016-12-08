@@ -10,6 +10,7 @@ class AgreementTestCase extends DrupalWebTestCase {
   protected $site_name;
   protected $privileged_user;
   protected $unprivileged_user;
+  protected $bypass_user;
   protected $page_title;
   protected $page_text;
   protected $not_set;
@@ -38,6 +39,11 @@ class AgreementTestCase extends DrupalWebTestCase {
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array('administer agreements'));
     $this->drupalLogin($this->privileged_user);
+  }
+
+  protected function bypassUserLogin() {
+    $this->bypass_user = $this->drupalCreateUser(array('bypass agreement'));
+    $this->drupalLogin($this->bypass_user);
   }
 
   protected function unprivilegedUserLogin($destination = 'user') {
@@ -316,4 +322,25 @@ class AgreementCustomUnprivilegedUserTestCase extends AgreementTestCase {
 
     // TODO: Log in following password reset link, go somewhere other than front page, open agreement, go to user profile
   }
+}
+
+class AgreementBypassUserTestCase extends AgreementTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => '4. Agreement page - bypass',
+      'description' => 'Ensure that user with bypass agreement will not see agreement page.',
+      'group' => 'Agreement',
+    );
+  }
+
+  public function testAgreement() {
+    // Sent to agreement page
+    $this->unprivilegedUserLogin();
+    $this->isAgreementPage();
+
+    // Not sent to agreement page.
+    $this->bypassUserLogin();
+    $this->assertUrl('user/' . $this->bypass_user->uid);
+  }
+
 }

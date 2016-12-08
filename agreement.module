@@ -38,8 +38,8 @@ function agreement_init() {
   global $user;
 
   // Check to make sure the user belongs to an agreement-restricted role.
-  // Members with the 'skip agreement' permission are excluded from the agreement
-  if (array_key_exists(variable_get('agreement_role', -1), $user->roles) && !user_access('skip agreement')) {
+  // Members with the 'bypass agreement' permission are excluded from the agreement.
+  if (array_key_exists(variable_get('agreement_role', -1), $user->roles) && !user_access('bypass agreement')) {
     $agreement_status = _agreement_status($user->uid);
 
     // We will not redirect to the agreement page from these URLs.
