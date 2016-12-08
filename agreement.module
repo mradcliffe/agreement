@@ -214,9 +214,6 @@ function agreement_views_data() {
  * Defines the settings form using FAPI.
  */
 function agreement_settings() {
-  // When a user changes the URL of the page the menu will need to be rebuilt.
-  // Submitting the form lands the user right back here.
-  menu_rebuild();
 
   $form = array();
 
@@ -348,7 +345,9 @@ function agreement_settings() {
     '#description'    => t('If an email address is entered here, an email will be sent to that email address each time a user agrees. To have no email sent, leave this blank.'),
                                 );
 
-                                return system_settings_form($form);
+    $formToReturn = system_settings_form($form);
+    $formToReturn['#submit'][] = '_agreement_admin_form_submit';
+    return $formToReturn;
 }
 
 /**
@@ -505,4 +504,22 @@ function _agreement_status($uid = NULL) {
   }
 
   return $query->execute()->fetchField();
+}
+
+/**
+ * Agreement settings form submit callback.
+ *
+ * Rebuilds the menu system when an user changes the URL or page title of the
+ * page.
+ *
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   The form state array.
+ */
+function _agreement_admin_form_submit($form, &$form_state) {
+  if ($form_state['values']['agreement_page_url'] !== $form['agreement_page_url']['#default_value'] ||
+      $form_state['values']['agreement_page_title'] !== $form['agreement_page_title']['#default_value']) {
+    menu_rebuild();
+  }
 }
