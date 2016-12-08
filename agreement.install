@@ -27,28 +27,28 @@ function agreement_schema() {
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-    ),
+      ),
       'uid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-    ),
+      ),
       'agreed' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-    ),
+      ),
       'sid' => array(
         'type' => 'varchar',
         'length' => 46,
-    ),
+      ),
       'agreed_date' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
+      ),
     ),
-  ),
     'primary key' => array('id'),
   );
 
@@ -101,7 +101,7 @@ function agreement_update_7200() {
     ->fields(array('permission' => 'bypass agreement'));
 
   if (!empty($rids)) {
-    // Do not update already configured role permissions
+    // Do not update already configured role permissions.
     $query->condition('rid', $rids, 'NOT IN');
   }
 
@@ -125,4 +125,3 @@ function agreement_update_7200() {
 
   return theme('item_list', array('items' => $items));
 }
-
