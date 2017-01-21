@@ -8,19 +8,7 @@
  * before accessing any site content.
  */
 
-/**
- * Implements hook_permission().
- */
-function agreement_permission() {
-  return array(
-    'administer agreements' => array(
-      'title' => t('Administer agreements'),
-    ),
-    'bypass agreement' => array(
-      'title' => t('Bypass agreement'),
-    ),
-  );
-}
+
 
 /**
  * Implements hook_init().

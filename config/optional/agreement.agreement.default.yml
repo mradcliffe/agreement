@@ -1,0 +1,18 @@
+name: 'Default Agreement'
+type: default
+path: '/agreement'
+settings:
+  frequency: 0
+  title: 'Our Agreement'
+  format: 'plain_text'
+  checkbox: 'I agree'
+  submit: 'Submit'
+  success: 'Thank you for accepting our agreement.'
+  failure: 'You must accept our agreement.'
+  visibility:
+    settings: 0
+    pages:
+      - '<front>'
+roles:
+  - 'authenticated user'
+agreement: ''

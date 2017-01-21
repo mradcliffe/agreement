@@ -1,0 +1,76 @@
+agreement.agreement*:
+  type: config_entity
+  label: 'Agreement'
+  mapping:
+    name:
+      type: label
+      label: 'Type'
+    type:
+      type: string
+      label: 'Machine Name'
+    path:
+      type: uri
+      label: 'Path'
+    settings:
+      type: agreement_settings
+      label: 'Settings'
+      mapping:
+    agreement:
+      type: text
+      label: 'Agreement text'
+      translatable: true
+
+agreement_settings:
+  type: mapping
+  label: 'Settings'
+  mapping:
+    frequency:
+      type: boolean
+      label: 'Frequency'
+    title:
+      type: string
+      label: 'Agreement Page Title'
+      translatable: true
+    checkbox:
+      type: string
+      label: 'Checkbox Text'
+      translatable: true
+    format:
+      type: filter.format
+      label: 'Text format'
+    submit:
+      type: string
+      label: 'Submit Text'
+      translatable: true
+    success:
+      type: text
+      label: 'Success Message'
+      translatable: true
+    failure:
+      type: text
+      label: 'Failure Message'
+      translatable: true
+    destination:
+      type: uri
+      label: 'Destination'
+    visibility:
+      type: mapping
+      label: 'Visibility'
+      mapping:
+        settings:
+          type: boolean
+          label: 'Visibility Settings'
+        pages:
+          type: sequence
+          label: 'Pages'
+          sequence:
+            type: uri
+    recipient:
+      type: email
+      label: 'Recipient Email'
+      nullable: true
+    roles:
+      type: sequence
+      label: 'Roles'
+      sequence:
+        type: string
