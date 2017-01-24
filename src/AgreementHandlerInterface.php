@@ -8,7 +8,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 /**
  * Agreement handler interface.
  */
-class AgreementHandlerInterface {
+interface AgreementHandlerInterface {
 
   /**
    * Check the status of an user account for a particular agreement.
@@ -18,7 +18,7 @@ class AgreementHandlerInterface {
    * @param \Drupal\Core\Session\AccountProxyInterface $account
    *   The user account to check.
    *
-   * @return boolean
+   * @return bool
    *   TRUE if the user account has agreed to this agreement.
    */
   public function hasAgreed(Agreement $agreement, AccountProxyInterface $account);
@@ -30,10 +30,13 @@ class AgreementHandlerInterface {
    *   The agreement that the user is agreeing to.
    * @param \Drupal\Core\Session\AccountProxyInterface $account
    *   The user account to agree.
-   * @param int $agree
+   * @param int $agreed
    *   An optional integer to set the agreement status to. Defaults to 1.
+   *
+   * @return bool
+   *   TRUE if the operation was successful.
    */
-  public function agree(Agreement $agreement, AccountProxyInterface $account, $agree = 1);
+  public function agree(Agreement $agreement, AccountProxyInterface $account, $agreed = 1);
 
   /**
    * Find the agreement by user account and path.
@@ -42,6 +45,9 @@ class AgreementHandlerInterface {
    *   The user account to check.
    * @param string $path
    *   The path to check.
+   *
+   * @return \Drupal\agreement\Entity\Agreement|false
+   *   The agreement entity to use or FALSE if none found.
    */
   public function getAgreementByUserAndPath(AccountProxyInterface $account, $path);
 
