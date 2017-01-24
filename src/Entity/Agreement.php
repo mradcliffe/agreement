@@ -15,9 +15,8 @@ use Drupal\Core\Session\AccountProxyInterface;
  *   handlers = {
  *     "list_builder" = "Drupal\agreement\Entity\AgreementListBuilder",
  *     "form" => {
- *       "default" = "Drupal\agreement\Form\AgreementForm",
+ *       "default" = "Drupal\agreement\Entity\AgreementForm",
  *     },
- *     "view_builder" = "Drupal\agreement\Entity\AgreementViewBuilder",
  *     "route_provider" = {
  *       "html" = "Drupal\agreement\Entity\Routing\AgreementRouteProvider",
  *     },

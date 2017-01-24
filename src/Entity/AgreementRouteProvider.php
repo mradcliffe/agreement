@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Routing\EntityRouteProviderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\Route;
 
 /**
  * Provides a dynamic canonical route for an agreement.
@@ -46,7 +47,7 @@ class AgreementRouteProvider implements EntityRouteProviderInterface, EntityHand
 
     foreach ($agreements as $agreement) {
       $id = $agreement->id();
-      $collection->add("agreement.$id", $this->getCanonicalRoute($agreement));
+      $collection->add("agreement.$id", $this->getCanonicalRouteForEntity($agreement));
     }
 
     return $collection;
@@ -61,8 +62,20 @@ class AgreementRouteProvider implements EntityRouteProviderInterface, EntityHand
    * @return \Symfony\Component\Routing\Route|null
    *   A route object.
    */
-  protected function getCanonicalRoute(Agreement $agreement) {
-    
+  protected function getCanonicalRouteForEntity(Agreement $agreement) {
+    $route = new Route($agreement->get('path')->getValue());
+    $route
+      ->addDefaults([
+        '_form' => '\Drupal\agreement\Form\AgreementForm',
+        '_title_callback' => '\Drupal\Core\Entity\Controller\EntityController::title',
+      ])
+      ->setRequirements([
+        '_permission' => 'access content',
+      ])
+      ->setOption('parameters', [
+        'agreement' => ['type' => 'entity:' . $agreement->id()],
+      ]);
+    return $route;
   }
 
   /**

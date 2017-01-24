@@ -2,7 +2,7 @@ entity.agreement.collection:
   path: '/admin/config/people/agreement'
   defaults:
     _title: 'Agreements'
-    _entity_list: 'agreement',
+    _entity_list: 'agreement'
   requirements:
     _permission: 'administer agreements'
 
