@@ -93,6 +93,7 @@ class AgreementHandler implements AgreementHandlerInterface {
       ->condition('type', $agreement->id())
       ->condition('agreed', 0, '>');
 
+    // @todo Change the logic here once frequency options change, https://www.drupal.org/node/2873904.
     if (!$agreement->agreeOnce()) {
       $query->condition('sid', session_id());
     }

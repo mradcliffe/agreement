@@ -48,6 +48,8 @@ class Agreement extends ConfigEntityBase {
    *
    * @return bool
    *   TRUE if the agreement is configured for users to agree only once.
+   *
+   * @todo Change the logic here once frequency options change, https://www.drupal.org/node/2873904.
    */
   public function agreeOnce() {
     return $this->get('settings')->get('frequency')->getValue() === 0;
