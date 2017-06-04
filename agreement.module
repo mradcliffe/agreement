@@ -8,14 +8,6 @@
  * before accessing any site content.
  */
 
-define('AGREEMENT_PAGE_URL', 'agreement');
-define('AGREEMENT_PAGE_TITLE', t('Our Agreement'));
-define('AGREEMENT_MESSAGE_SUCCESS', t('Thank you for accepting our agreement.'));
-define('AGREEMENT_MESSAGE_FAILURE', t('You must accept our agreement to continue.'));
-define('AGREEMENT_CHECKBOX_TEXT', t('I agree.'));
-define('AGREEMENT_SUBMIT_TEXT', t('Submit'));
-define('AGREEMENT_FORMAT', filter_default_format());
-
 /**
  * Implements hook_permission().
  */
@@ -44,7 +36,7 @@ function agreement_init() {
 
     // We will not redirect to the agreement page from these URLs.
     $exceptions = array(
-      variable_get('agreement_page_url', AGREEMENT_PAGE_URL),
+      variable_get('agreement_page_url', agreement_get_translated_message('AGREEMENT_PAGE_URL')),
       'user/logout',
       'admin/config/people/agreement',
     );
@@ -88,7 +80,7 @@ function agreement_init() {
           }
         }
 
-        drupal_goto(check_plain(variable_get('agreement_page_url', AGREEMENT_PAGE_URL)));
+        drupal_goto(check_plain(variable_get('agreement_page_url', agreement_get_translated_message('AGREEMENT_PAGE_URL'))));
         exit();
       }
     }
@@ -110,11 +102,11 @@ function agreement_menu() {
     'type'              => MENU_NORMAL_ITEM,
   );
 
-  $items[check_plain(variable_get('agreement_page_url', AGREEMENT_PAGE_URL))] = array(
+  $items[check_plain(variable_get('agreement_page_url', agreement_get_translated_message('AGREEMENT_PAGE_URL')))] = array(
     'access arguments'  => array('access content'),
     'description'       => 'The agreement page.',
     'page callback'     => 'agreement_page',
-    'title'             => check_plain(variable_get('agreement_page_title', AGREEMENT_PAGE_TITLE)),
+    'title'             => check_plain(variable_get('agreement_page_title', agreement_get_translated_message('AGREEMENT_PAGE_TITLE'))),
     'type'              => MENU_CALLBACK,
   );
 
@@ -244,7 +236,7 @@ function agreement_settings() {
     '#type'           => 'select',
   );
 
-  $text = variable_get('agreement_text', array('value' => '', 'format' => AGREEMENT_FORMAT));
+  $text = variable_get('agreement_text', array('value' => '', 'format' => agreement_get_translated_message('AGREEMENT_FORMAT')));
 
   $form['agreement_text'] = array(
     '#description'    => t('This is the agreement text.'),
@@ -257,14 +249,14 @@ function agreement_settings() {
 
   $form['agreement_page_title'] = array(
     '#description'    => t('What should the title of the agreement page be?'),
-    '#default_value'  => variable_get('agreement_page_title', AGREEMENT_PAGE_TITLE),
+    '#default_value'  => variable_get('agreement_page_title', agreement_get_translated_message('AGREEMENT_PAGE_TITLE')),
     '#title'          => t('Agreement Page Title'),
     '#type'           => 'textfield',
   );
 
   $form['agreement_page_url'] = array(
     '#description'    => t('At what URL should the agreement page be located? Relative to site root. No leading or trailing slashes.'),
-    '#default_value'  => variable_get('agreement_page_url', AGREEMENT_PAGE_URL),
+    '#default_value'  => variable_get('agreement_page_url', agreement_get_translated_message('AGREEMENT_PAGE_URL')),
     '#required'       => TRUE,
     '#title'          => t('Agreement Page URL'),
     '#type'           => 'textfield',
@@ -272,7 +264,7 @@ function agreement_settings() {
 
   $form['agreement_checkbox_text'] = array(
     '#description'    => t('This text will be displayed next to the "I agree" checkbox.'),
-    '#default_value'  => variable_get('agreement_checkbox_text', AGREEMENT_CHECKBOX_TEXT),
+    '#default_value'  => variable_get('agreement_checkbox_text', agreement_get_translated_message('AGREEMENT_CHECKBOX_TEXT')),
     '#required'       => TRUE,
     '#title'          => t('Agreement Checkbox Text'),
     '#type'           => 'textfield',
@@ -280,7 +272,7 @@ function agreement_settings() {
 
   $form['agreement_submit_text'] = array(
     '#description'    => t('This text will be displayed on the "Submit" button.'),
-    '#default_value'  => variable_get('agreement_submit_text', AGREEMENT_SUBMIT_TEXT),
+    '#default_value'  => variable_get('agreement_submit_text', agreement_get_translated_message('AGREEMENT_SUBMIT_TEXT')),
     '#required'       => TRUE,
     '#title'          => t('Agreement Submit Text'),
     '#type'           => 'textfield',
@@ -288,7 +280,7 @@ function agreement_settings() {
 
   $form['agreement_message_success'] = array(
     '#description'    => t('What message should be displayed to the users once they accept the agreement?'),
-    '#default_value'  => variable_get('agreement_message_success', AGREEMENT_MESSAGE_SUCCESS),
+    '#default_value'  => variable_get('agreement_message_success', agreement_get_translated_message('AGREEMENT_MESSAGE_SUCCESS')),
     '#title'          => t('Agreement Success Message'),
     '#type'           => 'textfield',
   );
@@ -307,7 +299,7 @@ function agreement_settings() {
 
   $form['agreement_message_failure'] = array(
     '#description'    => t('What message should be displayed to the users if they do not accept the agreement?'),
-    '#default_value'  => variable_get('agreement_message_failure', AGREEMENT_MESSAGE_FAILURE),
+    '#default_value'  => variable_get('agreement_message_failure', agreement_get_translated_message('AGREEMENT_MESSAGE_FAILURE')),
     '#title'          => t('Agreement Failure Message'),
     '#type'           => 'textfield',
   );
@@ -367,7 +359,7 @@ function agreement_page() {
     drupal_goto('<front>');
   }
 
-  $agreement = variable_get('agreement_text', array('value' => '', 'format' => AGREEMENT_FORMAT));
+  $agreement = variable_get('agreement_text', array('value' => '', 'format' => agreement_get_translated_message('AGREEMENT_FORMAT')));
 
   $text = check_markup($agreement['value'], $agreement['format']);
 
@@ -407,13 +399,13 @@ function agreement_form($form, &$form_state, $text, $status = 0, $uid = -1) {
   if (!$status) {
     $form['agree'] = array(
       '#default_value'  => $status,
-      '#title'          => check_plain(variable_get('agreement_checkbox_text', AGREEMENT_CHECKBOX_TEXT)),
+      '#title'          => check_plain(variable_get('agreement_checkbox_text', agreement_get_translated_message('AGREEMENT_CHECKBOX_TEXT'))),
       '#type'           => 'checkbox',
     );
 
     $form['submit'] = array(
       '#type'           => 'submit',
-      '#value'          => check_plain(variable_get('agreement_submit_text', AGREEMENT_SUBMIT_TEXT)),
+      '#value'          => check_plain(variable_get('agreement_submit_text', agreement_get_translated_message('AGREEMENT_SUBMIT_TEXT'))),
     );
   }
 
@@ -429,7 +421,7 @@ function agreement_form($form, &$form_state, $text, $status = 0, $uid = -1) {
  */
 function agreement_form_validate($form, &$form_state) {
   if (!$form_state['values']['agree']) {
-    form_set_error('agree', check_plain(variable_get('agreement_message_failure', AGREEMENT_MESSAGE_FAILURE)));
+    form_set_error('agree', check_plain(variable_get('agreement_message_failure', agreement_get_translated_message('AGREEMENT_MESSAGE_FAILURE'))));
   }
 }
 
@@ -455,7 +447,7 @@ function agreement_form_submit($form, &$form_state) {
   );
   drupal_write_record('agreement', $edit);
 
-  drupal_set_message(check_plain(variable_get('agreement_message_success', AGREEMENT_MESSAGE_SUCCESS)));
+  drupal_set_message(check_plain(variable_get('agreement_message_success', agreement_get_translated_message('AGREEMENT_MESSAGE_SUCCESS'))));
 
   // Send email notifying of acceptance if admin has set an email address.
   if ($to = variable_get('agreement_email_recipient', '')) {
@@ -536,4 +528,47 @@ function _agreement_admin_form_submit($form, &$form_state) {
       $form_state['values']['agreement_page_title'] !== $form['agreement_page_title']['#default_value']) {
     menu_rebuild();
   }
+}
+
+/**
+ * Get agreement translated string constants.
+ *
+ * @param string $name
+ *   The constant name to retrieve as a string.
+ *
+ * @return string
+ *   Get the translated string for the agreement "constant".
+ */
+function agreement_get_translated_message($name) {
+  $messages = _agreement_get_translated_messages();
+
+  if ($name && isset($messages[$name])) {
+    return $messages[$name];
+  }
+
+  return '';
+}
+
+/**
+ * Get all translated string constants.
+ *
+ * @return array
+ *   An array keyed by the "constant" name and value as the translated string.
+ */
+function _agreement_get_translated_messages() {
+  $agreement_constants = &drupal_static(__FUNCTION__);
+
+  if (!isset($agreement_constants)) {
+    $agreement_constants = array(
+      'AGREEMENT_PAGE_URL' => 'agreement',
+      'AGREEMENT_PAGE_TITLE' => t('Our Agreement'),
+      'AGREEMENT_MESSAGE_SUCCESS' => t('Thank you for accepting our agreement.'),
+      'AGREEMENT_MESSAGE_FAILURE' => t('You must accept our agreement to continue.'),
+      'AGREEMENT_CHECKBOX_TEXT' => t('I agree.'),
+      'AGREEMENT_SUBMIT_TEXT' => t('Submit'),
+      'AGREEMENT_FORMAT' => filter_default_format(),
+    );
+  }
+
+  return $agreement_constants;
 }
