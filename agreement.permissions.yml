@@ -1,0 +1,6 @@
+administer agreements:
+  title: 'Administer Agreements'
+  restrict access: true
+bypass agreement:
+  title: 'Bypass Agreement'
+  description: 'Bypass all agreements'
