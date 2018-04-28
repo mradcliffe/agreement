@@ -24,6 +24,16 @@ interface AgreementHandlerInterface {
   public function hasAgreed(Agreement $agreement, AccountProxyInterface $account);
 
   /**
+   * Check if an user can bypass the agreement or if the agreement applies.
+   *
+   * @param \Drupal\agreement\Entity\Agreement $agreement
+   *   The agreement to check roles.
+   * @param \Drupal\Core\Session\AccountProxyInterface $account
+   *   The user account to check bypass permission.
+   */
+  public function canAgree(Agreement $agreement, AccountProxyInterface $account);
+
+  /**
    * Accept the agreement for an user account.
    *
    * @param \Drupal\agreement\Entity\Agreement $agreement

@@ -1,20 +1,19 @@
-agreement.agreement*:
+agreement.agreement.*:
   type: config_entity
   label: 'Agreement'
   mapping:
-    name:
-      type: label
-      label: 'Type'
-    type:
+    id:
       type: string
-      label: 'Machine Name'
+      label: 'ID'
+    label:
+      type: label
+      label: 'Name'
     path:
       type: uri
       label: 'Path'
     settings:
       type: agreement_settings
       label: 'Settings'
-      mapping:
     agreement:
       type: text
       label: 'Agreement text'
@@ -25,7 +24,7 @@ agreement_settings:
   label: 'Settings'
   mapping:
     frequency:
-      type: boolean
+      type: integer
       label: 'Frequency'
     title:
       type: string
@@ -36,7 +35,7 @@ agreement_settings:
       label: 'Checkbox Text'
       translatable: true
     format:
-      type: filter.format
+      type: string
       label: 'Text format'
     submit:
       type: string
@@ -58,7 +57,7 @@ agreement_settings:
       label: 'Visibility'
       mapping:
         settings:
-          type: boolean
+          type: integer
           label: 'Visibility Settings'
         pages:
           type: sequence

@@ -2,4 +2,4 @@ agreement.admin:
   title: Agreements
   description: 'Manage agreements that users must accept before using site.'
   route_name: entity.agreement.collection
-  parent: system.admin_config.people
+  parent: user.admin_index

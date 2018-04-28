@@ -14,8 +14,9 @@ use Drupal\Core\Session\AccountProxyInterface;
  *   admin_permission = "administer agreements",
  *   handlers = {
  *     "list_builder" = "Drupal\agreement\Entity\AgreementListBuilder",
- *     "form" => {
+ *     "form" = {
  *       "default" = "Drupal\agreement\Entity\AgreementForm",
+ *       "delete" = "Drupal\agreement\Entity\AgreementDeleteForm",
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\agreement\Entity\Routing\AgreementRouteProvider",
@@ -24,8 +25,8 @@ use Drupal\Core\Session\AccountProxyInterface;
  *   config_prefix = "agreement",
  *   static_cache = TRUE,
  *   entity_keys = {
- *     "id" = "name",
- *     "type" = "label",
+ *     "id" = "id",
+ *     "label" = "label",
  *   },
  *   links = {
  *     "delete-form" = "/admin/config/people/agreement/manage/{agreement}/delete",
@@ -33,8 +34,8 @@ use Drupal\Core\Session\AccountProxyInterface;
  *     "collection" = "/admin/config/people/agreement/manage",
  *   },
  *   config_export = {
- *     "name",
- *     "type",
+ *     "id",
+ *     "label",
  *     "path",
  *     "settings",
  *     "agreement",
@@ -44,15 +45,58 @@ use Drupal\Core\Session\AccountProxyInterface;
 class Agreement extends ConfigEntityBase {
 
   /**
+   * The machine name.
+   *
+   * @var string
+   */
+  protected $id;
+
+  /**
+   * The label.
+   *
+   * @var string
+   */
+  protected $label;
+
+  /**
    * Agreement frequency setting.
    *
    * @return bool
    *   TRUE if the agreement is configured for users to agree only once.
-   *
-   * @todo Change the logic here once frequency options change, https://www.drupal.org/node/2873904.
    */
   public function agreeOnce() {
-    return $this->get('settings')->get('frequency')->getValue() === 0;
+    $settings = $this->getSettings();
+    return $settings['frequency'] === -1 ? TRUE : FALSE;
+  }
+
+  /**
+   * Returns the settings as an array.
+   *
+   * @return array
+   *   The stored settings or some sane defaults.
+   */
+  public function getSettings() {
+    $settings = $this->get('settings');
+    if ($settings === NULL) {
+      return [
+        'frequency' => -1,
+        'title' => '',
+        'agreement' => '',
+        'format' => '',
+        'submit' => '',
+        'checkbox' => '',
+        'success' => '',
+        'failure' => '',
+        'destination' => '',
+        'recipient' => '',
+        'roles' => [],
+        'visibility' => [
+          'settings' => -1,
+          'pages' => '',
+        ],
+      ];
+    }
+    return $settings;
   }
 
   /**
@@ -66,7 +110,9 @@ class Agreement extends ConfigEntityBase {
    */
   public function accountHasAgreementRole(AccountProxyInterface $account) {
     $account_roles = $account->getRoles();
-    $roles = $this->get('settings')->get('roles');
+
+    $settings = $this->getSettings();
+    $roles = $settings['roles'];
     $has_roles = array_intersect($roles, $account_roles);
     return !empty($has_roles);
   }
@@ -78,12 +124,8 @@ class Agreement extends ConfigEntityBase {
    *   Get the visibility pages setting as a string.
    */
   public function getVisibilityPages() {
-    $pages = $this
-      ->get('settings')
-      ->get('visibility')
-      ->get('pages')
-      ->getValue();
-    return html_entity_decode(strtolower(implode("\n", $pages)));
+    $settings = $this->getSettings();
+    return html_entity_decode(strtolower(implode("\n", $settings['visibility']['pages'])));
   }
 
   /**
@@ -93,7 +135,8 @@ class Agreement extends ConfigEntityBase {
    *   The visibility setting: 0 for match all except, and 1 for match any.
    */
   public function getVisibilitySetting() {
-    return $this->get('settings')->get('visibility')->get('setting')->getValue();
+    $settings = $this->getSettings();
+    return $settings['visibility']['settings'];
   }
 
 }

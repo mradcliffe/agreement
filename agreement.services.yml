@@ -3,7 +3,7 @@ services:
     class: Drupal\agreement\EventSubscriber\AgreementSubscriber
     arguments: ['@agreement.handler', '@path.current', '@session_manager', '@current_user']
     tags:
-      - {name: event_subscriber}
+      - { name: event_subscriber }
   agreement.handler:
     class: Drupal\agreement\AgreementHandler
-    argument: ['@database', '@entity_type.manager', '@path.matcher']
+    arguments: ['@database', '@entity_type.manager', '@path.matcher']

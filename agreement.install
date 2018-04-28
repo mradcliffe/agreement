@@ -6,37 +6,6 @@
  */
 
 /**
- * Create a default agreement based on current variables.
- *
- * @return array
- *   Agreement type.
- */
-function _agreement_default_agreement() {
-  $text = variable_get('agreement_text', array('value' => '', 'format' => filter_default_format()));
-  $default = array(
-    'name' => 'default',
-    'type' => 'Default agreement',
-    'path' => variable_get('agreement_page_url', 'agreement'),
-    'agreement' => $text['value'],
-    'settings' => array(
-      'role' => variable_get('agreement_role', 2),
-      'title' => variable_get('agreement_page_title', 'Our Agreement'),
-      'format' => $text['format'],
-      'frequency' => variable_get('agreement_frequency', 0),
-      'success' => variable_get('agreement_message_success', 'Thank you for accepting our agreement.'),
-      'failure' => variable_get('agreement_message_failure', 'You must accept our agreement to continue.'),
-      'checkbox' => variable_get('agreement_checkbox_text', 'I agree.'),
-      'submit' => variable_get('agreement_submit_text', 'Submit'),
-      'destination' => variable_get('agreement_success_destination', ''),
-      'visibility_settings' => variable_get('agreement_page_visibility_settings', 0),
-      'visibility_pages' => variable_get('agreement_page_visibility_pages', ''),
-      'email_recipient' => variable_get('agreement_email_recipient', ''),
-    ),
-  );
-  return $default;
-}
-
-/**
  * Implements hook_install().
  */
 function agreement_install() {

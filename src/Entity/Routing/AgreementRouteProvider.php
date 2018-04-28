@@ -1,39 +1,36 @@
 <?php
 
-namespace Drupal\agreement\Entity;
+namespace Drupal\agreement\Entity\Routing;
 
+use Drupal\agreement\Entity\Agreement;
 use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\Routing\EntityRouteProviderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
- * Provides a dynamic canonical route for an agreement.
+ * Provide routes for each agreement entity.
  */
 class AgreementRouteProvider implements EntityRouteProviderInterface, EntityHandlerInterface {
 
   /**
    * The entity type manager.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
 
   /**
    * Initialize method.
    *
-   * This duplicates DefaultHtmlRouteProvider because for some silly reason
-   * that class been marked as "internal" so IDEs will complain that you are
-   * not supposed to use it. DrupalWTF.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+    $this->entityTypeManager = $entityTypeManager;
   }
 
   /**
@@ -41,20 +38,23 @@ class AgreementRouteProvider implements EntityRouteProviderInterface, EntityHand
    */
   public function getRoutes(EntityTypeInterface $entity_type) {
     $collection = new RouteCollection();
+
+    // Find every agreement and ensure that routes are created for each path.
     $agreements = $this->entityTypeManager
       ->getStorage('agreement')
       ->loadMultiple();
 
-    foreach ($agreements as $agreement) {
-      $id = $agreement->id();
-      $collection->add("agreement.$id", $this->getCanonicalRouteForEntity($agreement));
+    if (!empty($agreements)) {
+      foreach ($agreements as $id => $agreement) {
+        $collection->add("agreement.$id", $this->getCanonicalRouteForEntity($agreement));
+      }
     }
 
     return $collection;
   }
 
   /**
-   * Get the route information from agreement entity.
+   * Get the route information from the agreement entity.
    *
    * @param \Drupal\agreement\Entity\Agreement $agreement
    *   The agreement entity.
@@ -63,18 +63,21 @@ class AgreementRouteProvider implements EntityRouteProviderInterface, EntityHand
    *   A route object.
    */
   protected function getCanonicalRouteForEntity(Agreement $agreement) {
-    $route = new Route($agreement->get('path')->getValue());
+    $route = new Route($agreement->get('path'));
     $route
       ->addDefaults([
         '_form' => '\Drupal\agreement\Form\AgreementForm',
-        '_title_callback' => '\Drupal\Core\Entity\Controller\EntityController::title',
+        '_title_callback' => '\Drupal\agreement\Form\AgreementForm::title',
+        'agreement' => $agreement->id(),
       ])
-      ->setRequirements([
-        '_permission' => 'access content',
-      ])
-      ->setOption('parameters', [
-        'agreement' => ['type' => 'entity:' . $agreement->id()],
-      ]);
+      ->setRequirements(['_permission' => 'access content'])
+      ->setOption(
+        'parameters',
+        [
+          'agreement' => ['type' => 'entity:agreement'],
+        ]
+      );
+
     return $route;
   }
 

@@ -78,6 +78,10 @@ class AgreementHandler implements AgreementHandlerInterface {
       $transaction->rollback();
       return FALSE;
     }
+    catch (\Exception $e) {
+      $transaction->rollback();
+      return FALSE;
+    }
 
     return isset($id);
   }
@@ -104,10 +108,23 @@ class AgreementHandler implements AgreementHandlerInterface {
   /**
    * {@inheritdoc}
    */
+  public function canAgree(Agreement $agreement, AccountProxyInterface $account) {
+    return !$account->hasPermission('bypass agreement') &&
+      $agreement->accountHasAgreementRole($account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getAgreementByUserAndPath(AccountProxyInterface $account, $path) {
     $agreement_types = $this->entityTypeManager->getStorage('agreement')->loadMultiple();
     $default_exceptions = [
+      '/user/login_status',
+      '/user/login',
       '/user/logout',
+      '/user/password',
+      '/user/reset/*',
+      '/user/reset/*/*/*',
       '/admin/config/people/agreement',
       '/admin/config/people/agreement/*',
       '/admin/config/people/agreement/manage/*',
@@ -115,7 +132,7 @@ class AgreementHandler implements AgreementHandlerInterface {
 
     // Get a list of pages to never display agreements on.
     $exceptions = array_reduce($agreement_types, function (&$result, Agreement $item) {
-      $result[] = $item->get('path')->getValue();
+      $result[] = $item->get('path');
       return $result;
     }, $default_exceptions);
 
@@ -132,7 +149,7 @@ class AgreementHandler implements AgreementHandlerInterface {
       return $result;
     }, []);
 
-    // Try to find an agreement type that matcehs the path.
+    // Try to find an agreement type that matches the path.
     $pathMatcher = $this->pathMatcher;
     $self = $this;
     $info = array_reduce($agreements_with_roles, function (&$result, Agreement $item) use ($account, $path, $pathMatcher, $self) {

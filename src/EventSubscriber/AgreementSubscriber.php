@@ -88,7 +88,7 @@ class AgreementSubscriber implements EventSubscriberInterface {
         }
 
         // Redirect to the agreement page.
-        $event->setResponse(new RedirectResponse($info->get('path')->getValue()));
+        $event->setResponse(new RedirectResponse($info->get('path')));
       }
     }
   }
