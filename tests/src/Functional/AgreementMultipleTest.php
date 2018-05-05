@@ -39,6 +39,7 @@ class AgreementMultipleTest extends AgreementTestBase {
         'failure' => 'Failure',
         'roles' => ['authenticated'],
         'recipient' => '',
+        'reset_date' => 0,
         'destination' => '',
         'visibility' => [
           'settings' => 1,

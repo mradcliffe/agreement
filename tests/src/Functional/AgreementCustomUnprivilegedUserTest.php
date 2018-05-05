@@ -28,9 +28,7 @@ class AgreementCustomUnprivilegedUserTest extends AgreementTestBase {
   /**
    * Asserts that agreement only functions on the front page.
    */
-  public function testAgreement() {
-    $this->markTestSkipped('@todo figure out why this is broken.');
-
+  public function testAgreementPages() {
     $settings = $this->agreement->getSettings();
     $settings['visibility']['settings'] = 1;
     $settings['visibility']['pages'] = ['<front>'];
@@ -55,26 +53,47 @@ class AgreementCustomUnprivilegedUserTest extends AgreementTestBase {
    * Asserts the agreement frequency option.
    */
   public function testAgreementFrequency() {
-    $this->markTestSkipped('@todo figure out why this is broken.');
-
-    // A) Tests Agreement on every login.
+    // A) Agreement required once.
     $settings = $this->agreement->getSettings();
-    $settings['frequency'] = 1;
+    $settings['visibility']['settings'] = 1;
+    $settings['visibility']['pages'] = ['<front>'];
     $this->agreement->set('settings', $settings);
     $this->agreement->save();
 
-
-    // Log in and open the agreement.
+    // Log in, go to front page, open agreement.
     $this->drupalLogin($this->account);
+    $this->drupalGet('/node');
     $this->assertAgreementPage($this->agreement);
     $this->assertAgreed($this->agreement);
 
     // Log out, log back in, open agreement.
     $this->drupalLogin($this->account);
+    $this->drupalGet('/node');
+    $this->assertNotAgreementPage($this->agreement);
+    $this->drupalLogout();
+
+    // B) Agreement required on every login.
+    $settings['frequency'] = 0;
+    $this->agreement->set('settings', $settings);
+    $this->agreement->save();
+
+    // Log in, go to front page, open agreement.
+    $this->drupalLogin($this->account);
+    $this->drupalGet('/node');
+    $this->assertAgreementPage($this->agreement);
+    $this->assertAgreed($this->agreement);
+
+    // Log out, log back in, open agreement.
+    $this->drupalLogin($this->account);
+    $this->drupalGet('/node');
     $this->assertAgreementPage($this->agreement);
     $this->assertAgreed($this->agreement);
 
     // Change password, no agreement.
+    $settings['visibility']['pages'] = [];
+    $this->agreement->set('settings', $settings);
+    $this->agreement->save();
+
     $edit = array(
       'current_pass' => $this->account->passRaw,
       'pass[pass1]' => $pass = $this->randomString(),
@@ -104,30 +123,33 @@ class AgreementCustomUnprivilegedUserTest extends AgreementTestBase {
    *   - user needs to change password -> redirect to user/%/edit.
    */
   public function testAgreementDestination() {
-    $this->markTestSkipped('@todo figure out why this is broken.');
 
     // A) Agreement destination = blank.
     $settings = $this->agreement->getSettings();
     $settings['frequency'] = 0;
-    $settings['visibility']['pages'] = [];
+    $settings['visibility']['pages'] = ['/user', '/user/*'];
     $this->agreement->set('settings', $settings);
     $this->agreement->save();
 
     // Log in, open agreement, go to front page.
     $this->drupalLogin($this->account);
     $this->drupalGet('/node');
+    $this->drupalGet('/node/' . $this->node->id());
     $this->assertAgreementPage($this->agreement);
     $this->assertAgreed($this->agreement);
     $this->assertFrontPage();
+    $this->drupalLogout();
 
     // Log in, go somewhere other than front page, open agreement, go to user's
     // original destination.
     $this->drupalLogin($this->account);
     $this->drupalGet('/node/' . $this->node->id());
+    $this->drupalGet('/node');
     $this->assertAgreementPage($this->agreement);
     $this->assertAgreed($this->agreement);
     $this->assertSession()
       ->addressMatches('/node\/' . $this->node->id() . '$/');
+    $this->drupalLogout();
 
     // @todo: Log in following password reset link, go somewhere other than
     // front page, open agreement, go to user profile.
@@ -141,16 +163,14 @@ class AgreementCustomUnprivilegedUserTest extends AgreementTestBase {
     $this->drupalLogin($this->account);
     $this->drupalGet('/node');
     $this->assertAgreementPage($this->agreement);
-    $this->drupalGet('/user/' . $this->account->id() . '/edit');
-    $this->assertAgreementPage($this->agreement);
     $this->assertAgreed($this->agreement);
     $this->assertSession()
       ->addressMatches('/node\/' . $this->node->id() . '$/');
+    $this->drupalLogout();
 
     // Log in, go somewhere other than front page, open agreement, go to node/1.
     $this->drupalLogin($this->account);
-    $this->assertAgreementPage($this->agreement);
-    $this->drupalGet('/user/' . $this->account->id() . '/edit');
+    $this->drupalGet('/node/' . $this->otherNode->id());
     $this->assertAgreementPage($this->agreement);
     $this->assertAgreed($this->agreement);
     $this->assertSession()

@@ -3,6 +3,7 @@
 namespace Drupal\Tests\agreement\Functional;
 
 use Drupal\agreement\Entity\Agreement;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\node\Traits\NodeCreationTrait;
 
@@ -18,7 +19,7 @@ abstract class AgreementTestBase extends BrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = ['node', 'filter', 'agreement'];
+  protected static $modules = ['node', 'filter', 'views', 'agreement'];
 
   /**
    * A page node to test with.
@@ -26,6 +27,13 @@ abstract class AgreementTestBase extends BrowserTestBase {
    * @var \Drupal\node\Entity\Node
    */
   protected $node;
+
+  /**
+   * An alternate page node to test.
+   *
+   * @var \Drupal\node\Entity\Node
+   */
+  protected $otherNode;
 
   /**
    * Agreement to test with.
@@ -50,9 +58,12 @@ abstract class AgreementTestBase extends BrowserTestBase {
     $this->createContentType(['type' => 'page', 'name' => 'Page']);
     $this->container->get('router.builder')->rebuild();
 
-    // Create a page node.
+    // Create a page nodes.
     /* @var \Drupal\node\Entity\Node node */
     $this->node = $this->createNode();
+
+    /* @var \Drupal\node\Entity\Node node */
+    $this->otherNode = $this->createNode();
 
     // Load the default agreement.
     $this->agreement = $this->container
@@ -131,10 +142,11 @@ abstract class AgreementTestBase extends BrowserTestBase {
   }
 
   /**
-   * Asserts that the current page is the front page (node).
+   * Asserts that the current page is the front page.
    */
   public function assertFrontPage() {
-    $this->assertStringEndsWith('/node', $this->getUrl());
+    $front_page = \Drupal::config('system.site')->get('page.front');
+    $this->assertEquals($this->getAbsoluteUrl($front_page), $this->getUrl());
   }
 
   /**

@@ -98,7 +98,8 @@ class AgreementSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     $events = [];
-    $events[KernelEvents::REQUEST][] = ['checkForRedirection'];
+    // Dynamic page cache will redirect to a cached page at priority 27.
+    $events[KernelEvents::REQUEST][] = ['checkForRedirection', 28];
     return $events;
   }
 

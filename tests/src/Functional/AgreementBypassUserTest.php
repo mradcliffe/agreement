@@ -14,7 +14,7 @@ class AgreementBypassUserTest extends AgreementTestBase {
    */
   public function testAgreement() {
     $account = $this->drupalCreateUser(['bypass agreement', 'access content']);
-    $this->drupalLogin($account, '/user/' . $account->id());
+    $this->drupalLogin($account);
     $this->assertNotAgreementPage($this->agreement);
   }
 

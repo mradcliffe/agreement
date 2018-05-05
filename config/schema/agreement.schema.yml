@@ -52,6 +52,9 @@ agreement_settings:
     destination:
       type: uri
       label: 'Destination'
+    reset_date:
+      type: integer
+      label: 'Last Reset Date'
     visibility:
       type: mapping
       label: 'Visibility'

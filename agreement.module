@@ -20,8 +20,12 @@ function agreement_user_update(EntityInterface $account) {
     $agreements = \Drupal::entityTypeManager()->getStorage('agreement')->loadMultiple();
     /** @var \Drupal\agreement\Entity\Agreement $agreement */
     foreach ($agreements as $agreement) {
-      if (!$agreement->agreeOnce() &&
-          $account->original->get('pass') === $account->get('pass') &&
+      // Do not require user to re-accept agreement if they've just changed
+      // their password.
+      $settings = $agreement->getSettings();
+      if ($settings['frequency'] === 0 &&
+          isset($account->original) &&
+          $account->checkExistingPassword($account->original) &&
           $current_user->id() === $account->id()) {
         \Drupal::service('agreement.handler')->agree($account, $agreement, 2);
       }

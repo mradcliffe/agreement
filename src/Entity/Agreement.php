@@ -66,7 +66,23 @@ class Agreement extends ConfigEntityBase {
    */
   public function agreeOnce() {
     $settings = $this->getSettings();
-    return $settings['frequency'] === -1 ? TRUE : FALSE;
+    return $settings['frequency'] == -1 ? TRUE : FALSE;
+  }
+
+  /**
+   * Agreement frequency timestamp.
+   *
+   * @return int
+   *   The timestamp modifier to use for the frequency.
+   */
+  public function getAgreementFrequencyTimestamp() {
+    $timestamp = 0;
+    $settings = $this->getSettings();
+    if ($settings['frequency'] > 0) {
+      $timestamp = round(time() - ($settings['frequency'] * 24 * 60 * 60));
+    }
+
+    return max($settings['reset_date'], $timestamp);
   }
 
   /**
@@ -90,9 +106,10 @@ class Agreement extends ConfigEntityBase {
         'destination' => '',
         'recipient' => '',
         'roles' => [],
+        'reset_date' => 0,
         'visibility' => [
           'settings' => -1,
-          'pages' => '',
+          'pages' => [],
         ],
       ];
     }

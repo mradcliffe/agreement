@@ -171,11 +171,18 @@ class AgreementForm implements FormInterface, ContainerInjectionInterface {
     /* @var $agreement \Drupal\agreement\Entity\Agreement */
     $agreement = $storage['agreement'];
     $settings = $agreement->getSettings();
-    $destination = isset($_SESSION['agreement_destination']) ? $_SESSION['agreement_destination'] : $settings['destination'];
+    $destination = '';
+
+    if ($settings['destination']) {
+      $destination = $settings['destination'];
+    }
+    elseif (isset($_SESSION['agreement_destination'])) {
+      $destination = $_SESSION['agreement_destination'];
+    }
 
     if ($this->agreementHandler->agree($agreement, $this->account)) {
       $form_state->setRedirectUrl(Url::fromUserInput($destination));
-      $this->messenger->addStatus($settings['success']);
+      $this->messenger->addStatus($this->t('@success', ['@success' => $settings['success']]));
     }
     else {
       $form_state->setErrorByName('agree', $this->t('An error occurred accepting the agreement. Please try again.'));

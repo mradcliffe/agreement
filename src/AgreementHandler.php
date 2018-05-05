@@ -90,19 +90,34 @@ class AgreementHandler implements AgreementHandlerInterface {
    * {@inheritdoc}
    */
   public function hasAgreed(Agreement $agreement, AccountProxyInterface $account) {
+    $settings = $agreement->getSettings();
+
+    // if (isset($account->data['agreement']) && isset($account->data['agreement'][$agreement->id()])) {
+    //   $settings = $agreement->getSettings();
+    //   return $settings['frequency'] ? session_id() === $account->data['agreement'][$agreement->id()] : TRUE;
+    // }
+
     $query = $this->connection->select('agreement');
     $query
-      ->fields('agreement', array('id'))
+      ->fields('agreement', array('agreed'))
       ->condition('uid', $account->id())
       ->condition('type', $agreement->id())
-      ->condition('agreed', 0, '>');
+      ->range(0, 1);
 
-    // @todo Change the logic here once frequency options change, https://www.drupal.org/node/2873904.
-    if (!$agreement->agreeOnce()) {
+    if ($settings['frequency'] == 0) {
+      // Must agree on every login.
       $query->condition('sid', session_id());
     }
+    else {
+      // Must agree when frequency is set greater than zero (number of days).
+      $timestamp = $agreement->getAgreementFrequencyTimestamp();
+      if ($timestamp > 0) {
+        $query->condition('agreed_date', $agreement->getAgreementFrequencyTimestamp(), '>=');
+      }
+    }
 
-    return $query->execute()->fetchField();
+    $agreed = $query->execute()->fetchField();
+    return $agreed !== NULL && $agreed > 0;
   }
 
   /**
@@ -119,12 +134,7 @@ class AgreementHandler implements AgreementHandlerInterface {
   public function getAgreementByUserAndPath(AccountProxyInterface $account, $path) {
     $agreement_types = $this->entityTypeManager->getStorage('agreement')->loadMultiple();
     $default_exceptions = [
-      '/user/login_status',
-      '/user/login',
       '/user/logout',
-      '/user/password',
-      '/user/reset/*',
-      '/user/reset/*/*/*',
       '/admin/config/people/agreement',
       '/admin/config/people/agreement/*',
       '/admin/config/people/agreement/manage/*',
@@ -154,16 +164,19 @@ class AgreementHandler implements AgreementHandlerInterface {
     $self = $this;
     $info = array_reduce($agreements_with_roles, function (&$result, Agreement $item) use ($account, $path, $pathMatcher, $self) {
       if ($result) {
+        // Always returns the first matched agreement.
         return $result;
       }
 
       $pattern = $item->getVisibilityPages();
       $has_match = $pathMatcher->matchPath($path, $pattern);
-      if (0 === (int) $item->getVisibilitySetting() && FALSE === $has_match && !$self->hasAgreed($item, $account)) {
+      $has_agreed = $self->hasAgreed($item, $account);
+      $visibility = (int) $item->getVisibilitySetting();
+      if (0 === $visibility && FALSE === $has_match && !$has_agreed) {
         // An agreement exists that matches any page.
         $result = $item;
       }
-      elseif (1 === (int) $item->getVisibilitySetting() && $has_match && !$self->hasAgreed($item, $account)) {
+      elseif (1 === $visibility && $has_match && !$has_agreed) {
         // An agreement exists that matches the current path.
         $result = $item;
       }
