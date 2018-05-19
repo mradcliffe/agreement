@@ -1,5 +1,7 @@
 # Agreement
 
+**This repository is archived. Issues and patches should be submitted back on the [drupal.org issue queue](https://www.drupal.org/project/agreement/issues/).**
+
 The Agreement module allows the administrator to present a text-based agreement (think "Terms of Service") that users of a particular role must accept before they are allowed to access the site. The agreement is presented to users right after login, and must be accepted before the user can navigate to another page. Users will still be able to access the homepage (`<front>`) and `/logout` without accepting the agreement; all other pages will redirect the user to the agreement acceptance form.
 
 The following options are configurable from the module's settings page:
