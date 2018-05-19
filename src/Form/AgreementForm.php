@@ -4,15 +4,15 @@ namespace Drupal\agreement\Form;
 
 use Drupal\agreement\AgreementHandlerInterface;
 use Drupal\agreement\Entity\Agreement;
-use Drupal\Component\Utility\Xss;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Mail\MailManagerInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
@@ -61,6 +61,13 @@ class AgreementForm implements FormInterface, ContainerInjectionInterface {
   protected $messenger;
 
   /**
+   * Mail manager.
+   *
+   * @var \Drupal\Core\Mail\MailManagerInterface
+   */
+  protected $mailManager;
+
+  /**
    * Initialize method.
    *
    * @param \Drupal\agreement\AgreementHandlerInterface $agreementHandler
@@ -73,13 +80,16 @@ class AgreementForm implements FormInterface, ContainerInjectionInterface {
    *   The current user account.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
+   * @param \Drupal\Core\Mail\MailManagerInterface $mailManager
+   *   The mail service.
    */
-  public function __construct(AgreementHandlerInterface $agreementHandler, RouteMatchInterface $routeMatch, LanguageManagerInterface $languageManager, AccountProxyInterface $account, MessengerInterface $messenger) {
+  public function __construct(AgreementHandlerInterface $agreementHandler, RouteMatchInterface $routeMatch, LanguageManagerInterface $languageManager, AccountProxyInterface $account, MessengerInterface $messenger, MailManagerInterface $mailManager) {
     $this->agreementHandler = $agreementHandler;
     $this->routeMatch = $routeMatch;
     $this->languageManager = $languageManager;
     $this->account = $account;
     $this->messenger = $messenger;
+    $this->mailManager = $mailManager;
   }
 
   /**
@@ -190,6 +200,26 @@ class AgreementForm implements FormInterface, ContainerInjectionInterface {
   }
 
   /**
+   * Notify email recipient if provided.
+   *
+   * @param \Drupal\agreement\Entity\Agreement $agreement
+   *   The agreement entity.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The user account.
+   * @param string $mail
+   *   The email recipient.
+   */
+  protected function notify(Agreement $agreement, AccountInterface $account, $mail = '') {
+    if ($mail) {
+      $params = [
+        'context' => ['agreement' => $agreement],
+        'account' => $account,
+      ];
+      $this->mailManager->mail('agreement', 'notice', $mail, $account->getPreferredAdminLangcode(), $params);
+    }
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
@@ -198,7 +228,8 @@ class AgreementForm implements FormInterface, ContainerInjectionInterface {
       $container->get('current_route_match'),
       $container->get('language_manager'),
       $container->get('current_user'),
-      $container->get('messenger')
+      $container->get('messenger'),
+      $container->get('plugin.manager.mail')
     );
   }
 
